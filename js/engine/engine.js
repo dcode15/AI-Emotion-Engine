@@ -31,12 +31,12 @@ Engine.prototype.eventEval = function(Event) {
         ["Impact","HighlyPositive","AND","Importance","NotImportant","THEN","Desirability","Neutral"],
         ["Impact","HighlyNegative","AND","Importance","SlightlyImportant","THEN","Desirability","SlightlyUndesired"],
         ["Impact","SlightlyNegative","AND","Importance","SlightlyImportant","THEN","Desirability","SlightlyUndesired"],
-        ["Impact","Neutral","AND","Importance","SlightlyImportant","THEN","Desirability","Neutral"],
+        ["Impact","NoImpact","AND","Importance","SlightlyImportant","THEN","Desirability","Neutral"],
         ["Impact","SlightlyPositive","AND","Importance","SlightlyImportant","THEN","Desirability","SlightlyUndesired"],
         ["Impact","HighlyPositive","AND","Importance","SlightlyImportant","THEN","Desirability","SlightlyUndesired"],
         ["Impact","HighlyNegative","AND","Importance","ExtremelyImportant","THEN","Desirability","HighlyUndesired"],
         ["Impact","SlightlyNegative","AND","Importance","ExtremelyImportant","THEN","Desirability","SlightlyUndesired"],
-        ["Impact","Neutral","AND","Importance","ExtremelyImportant","THEN","Desirability","Neutral"],
+        ["Impact","NoImpact","AND","Importance","ExtremelyImportant","THEN","Desirability","Neutral"],
         ["Impact","SlightlyPositive","AND","Importance","ExtremelyImportant","THEN","Desirability","SlightlyDesired"],
         ["Impact","HighlyPositive","AND","Importance","ExtremelyImportant","THEN","Desirability","HighlyDesired"]];
 
