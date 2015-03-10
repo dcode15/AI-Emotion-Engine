@@ -1,29 +1,33 @@
 /**
  * Created by Douglas on 2/18/2015.
  */
-function fuzzyVar(variableName, setNames, setValues) {
+function FuzzyVar(variableName, setNames, setValues) {
 
     this.variableName = variableName;
     this.setNames = setNames;
     this.setValues = setValues;
 }
 
-function fuzzySystem(inputSets, outputSets, rules){
+function FuzzySystem(inputSets, outputSets, rules){
 
     this.inputSets = inputSets;
     this.outputSets = outputSets;
     this.rules = rules;
+
+    for(var i = 0; i < this.rules.length; i++) {
+        this.rules[i] = this.rules[i].split(" ");
+    }
 }
 
-fuzzySystem.prototype.processValue = function(value) {
+FuzzySystem.prototype.processValue = function(value) {
 
     var fuzzyInputs = this.convertInputToFuzzy(value);
-    console.log(fuzzyInputs);
     var fuzzyOutputs = this.applyRules(fuzzyInputs);
-    console.log(fuzzyOutputs);
+    var crispOutputs = this.defuzzify(fuzzyOutputs);
+    return crispOutputs;
 };
 
-fuzzySystem.prototype.convertInputToFuzzy = function(value) {
+FuzzySystem.prototype.convertInputToFuzzy = function(value) {
 
     var fuzzyInputs = {};
 
@@ -54,7 +58,7 @@ fuzzySystem.prototype.convertInputToFuzzy = function(value) {
     return fuzzyInputs;
 };
 
-fuzzySystem.prototype.applyRules = function(fuzzyInputs) {
+FuzzySystem.prototype.applyRules = function(fuzzyInputs) {
 
     var fuzzyOutputs = {};
     for(var outputNum = 0; outputNum < this.outputSets.length; outputNum++) {
@@ -81,14 +85,15 @@ fuzzySystem.prototype.applyRules = function(fuzzyInputs) {
             tokenNum++;
 
             var value = fuzzyInputs[varName][setName];
+
             if(operator === "IF") {
                 total = value;
             }
-            if(operator === "AND") {
-                total = Math.max(value, total);
-            }
-            if(operator === "OR") {
+            else if(operator === "AND") {
                 total = Math.min(value, total);
+            }
+            else if(operator === "OR") {
+                total = Math.max(value, total);
             }
 
             operator = rule[tokenNum];
@@ -99,8 +104,79 @@ fuzzySystem.prototype.applyRules = function(fuzzyInputs) {
         tokenNum++;
         var outputSet = rule[tokenNum];
         tokenNum++;
-        fuzzyOutputs[outputVar][outputSet] = total;
+        if(total > fuzzyOutputs[outputVar][outputSet]) {
+            fuzzyOutputs[outputVar][outputSet] = total;
+        }
     }
 
     return fuzzyOutputs;
+}
+
+FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
+
+    var crispOutputs = {};
+
+    for(var outputNum = 0; outputNum < this.outputSets.length; outputNum++) {
+        var keyPoints = []
+        var outputName = this.outputSets[outputNum].variableName;
+        var sets = this.outputSets[outputNum].setNames;
+
+        for (var setNum = 0; setNum < sets.length; setNum++) {
+            var setName = sets[setNum];
+            var left = new Point(this.outputSets[outputNum].setValues[setNum][0], 0);
+            var peak = new Point(this.outputSets[outputNum].setValues[setNum][1], 1);
+            var right = new Point(this.outputSets[outputNum].setValues[setNum][2], 0);
+
+            var membership = fuzzyOutputs[outputName][setName];
+
+            if(membership > 0) {
+                keyPoints.push(left);
+
+                if(membership == 1) {
+                    keyPoints.push(peak);
+                }
+                else {
+                    //come back and look at this
+                    var angle = Math.atan(1/(peak.x-left.x));
+                    var leftPeakX = membership / Math.tan(angle);
+                    keyPoints.push(new Point(leftPeakX, membership));
+
+                    angle = Math.atan(1/(right.x-peak.x));
+                    var rightPeakX = membership / Math.tan(angle);
+                    keyPoints.push(new Point(rightPeakX, membership));
+                }
+                keyPoints.push(right);
+            }
+        }
+        crispOutputs[outputName] = this.defuzzEstimate(keyPoints);
+    }
+
+    return crispOutputs;
+}
+
+FuzzySystem.prototype.defuzzEstimate = function(keyPoints) {
+
+    var maxY = 0;
+    var maxX = [];
+    for (var i = 0; i<keyPoints.length; i++){
+        if(keyPoints[i].y > maxY){
+            maxY = keyPoints[i].y;
+        }
+    }
+
+    for (var i = 0; i<keyPoints.length; i++){
+        if(keyPoints[i].y == maxY){
+            maxX.push(keyPoints[i].x);
+        }
+    }
+
+    var sum = 0
+    for (var i = 0; i<maxX.length; i++){
+        sum += maxX[i];
+    }
+    var center = sum/maxX.length;
+    var left = center-keyPoints[0].x;
+    var right = keyPoints[keyPoints.length-1].x-center;
+
+    return (center +(1/3)*(right-left));
 }
