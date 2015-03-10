@@ -4,6 +4,7 @@
 
 function Engine(){
     this.goals = {};
+    this.eval = new Evaluator()
 }
 
 function Event(impacts, cause, associations) {
@@ -16,12 +17,12 @@ Engine.prototype.addGoal = function(name, importance) {
     this.goals[name] = importance;
 }
 
-Engine.prototype.triggerEvent = function(Event) {
-    desirability = this.eventEval(Event);
+Engine.prototype.triggerEvent = function(event) {
+    desirability = this.eval.eventEval(event, this.goals);
     console.log(desirability);
 }
 
-Engine.prototype.eventEval = function(event) {
+function Evaluator(goals) {
     var impactVar = new FuzzyVar("Impact", ["HighlyNegative", "SlightlyNegative", "NoImpact", "SlightlyPositive", "HighlyPositive"],
         [[-1,-1,-0.2], [-0.8,-0.4,0], [-0.25,0,0.25], [0,0.4,0.8], [0.2,1,1]]);
     var importanceVar = new FuzzyVar("Importance", ["NotImportant", "SlightlyImportant", "ExtremelyImportant"],
@@ -44,7 +45,11 @@ Engine.prototype.eventEval = function(event) {
         "Impact SlightlyPositive AND Importance ExtremelyImportant THEN Desirability SlightlyDesired",
         "Impact HighlyPositive AND Importance ExtremelyImportant THEN Desirability HighlyDesired"];
 
-    var fuzzy = new FuzzySystem([impactVar, importanceVar],[desirabilityVar], rules);
+    this.fuzzy = new FuzzySystem([impactVar, importanceVar],[desirabilityVar], rules);
+    this.goals = goals;
+}
+
+Evaluator.prototype.eventEval = function(event, goals) {
     var totalDesirability = 0;
     var affectedGoals = 0;
 
@@ -52,15 +57,16 @@ Engine.prototype.eventEval = function(event) {
     for(var impactNum = 0; impactNum<event.impacts.length; impactNum++){
         var impactGoal = event.impacts[impactNum][0];
 
-        if(impactGoal in this.goals){
+        if(impactGoal in goals){
             var impact = event.impacts[impactNum][1];
-            console.log(impact);
-            console.log(this.goals[impactGoal]);
-            console.log(fuzzy.processValue([impact, this.goals[impactGoal]])["Desirability"]);
-            totalDesirability += fuzzy.processValue([impact, this.goals[impactGoal]])["Desirability"];
+            totalDesirability += this.fuzzy.processValue([impact, goals[impactGoal]])["Desirability"];
             affectedGoals++;
         }
     }
 
     return totalDesirability/affectedGoals;
+}
+
+function Appraiser() {
+    
 }
