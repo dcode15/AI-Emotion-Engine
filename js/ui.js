@@ -9,11 +9,19 @@ var floor = new THREE.Mesh(floorPlane, floorMaterial);
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 var gui = new dat.GUI();
 var objects = [];
-
-var parameters = {
-    color : "#ff0000",
-    mode : 'Add'
+var event = {
+    name: "",
+    impacts: "",
+    expectation: 0.5
 };
+var goal = {
+    name: "",
+    importance: 0.5
+};
+var agent = {
+    name: "",
+    create: function(){ console.log("clicked") }
+}
 
 init();
 render();
@@ -21,8 +29,18 @@ render();
 function init() {
 
     //Set up GUI controls
-    gui.addColor(parameters, 'color');
-    gui.add(parameters, 'mode', [ 'Add', 'Remove' ] );
+    var agentAddition = gui.addFolder("Add Agent");
+    agentAddition.add(agent, "name");
+    agentAddition.add(agent, "create");
+
+    var eventAddition = gui.addFolder('Add Event');
+    eventAddition.add(event, "name");
+    eventAddition.add(event, "impacts");
+    eventAddition.add(event, "expectation").min(0).max(1).step(.01);
+
+    var goalAddition = gui.addFolder('Add Goal');
+    goalAddition.add(goal, "name");
+    goalAddition.add(goal, "importance").min(0).max(1).step(.01);
 
     //Set camera location and orient towards origin
     camera.position.set(0,40,0);
@@ -42,11 +60,11 @@ function init() {
     scene.add(mainLight);
     
     //Create event listener for mouse clicks, triggering onClick()
-    document.addEventListener('mousedown', onClick, false);
+    //document.addEventListener('mousedown', onClick, false);
     window.addEventListener( 'resize', onWindowResize, false );
 }
 
-function onClick( event ) {
+/*function onClick( event ) {
     
     var mouse = {x: 0, y: 0};
     //Just a coordinate system conversion
@@ -64,19 +82,16 @@ function onClick( event ) {
         var intersect = ray.intersectObject(floor);
         var location = intersect[0].point;
         console.log(location);
+
+        var geometry = new THREE.CylinderGeometry(1,1,4,40);
+        var material = new THREE.MeshLambertMaterial({color: parameters.color});
+        var newCylinder = new THREE.Mesh(geometry, material);
+        scene.add(newCylinder);
+        objects.push(newCylinder);
+        //console.log(objects);
     
-        //Create new cylinder to be added to the scene
-        if(!(location.x < (-18) && location.z < (-60))){ 
-            var geometry = new THREE.CylinderGeometry(1,1,4,40);
-            var material = new THREE.MeshLambertMaterial({color: parameters.color});
-            var newCylinder = new THREE.Mesh(geometry, material);
-            scene.add(newCylinder);
-            objects.push(newCylinder);
-            //console.log(objects);
-    
-            //Place cylinder at the location where the ray intersected  the floor
-            newCylinder.position.set(location.x, 0, location.z);
-        }
+        //Place cylinder at the location where the ray intersected  the floor
+        newCylinder.position.set(location.x, 0, location.z);
     }
     else if(parameters.mode === 'Remove') {
         var intersects = ray.intersectObjects(objects);
@@ -86,7 +101,7 @@ function onClick( event ) {
             //console.log(objects);
         }
     }
-}
+}*/
 
 function onWindowResize(){
 
