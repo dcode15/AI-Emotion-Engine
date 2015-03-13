@@ -9,22 +9,39 @@ var floor = new THREE.Mesh(floorPlane, floorMaterial);
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 var gui = new dat.GUI();
 var entryMode = false;
+var triggerFolder;
+var eventsDropdown;
+var triggerButton;
 var agentsList = {};
+var eventsList = [];
 var event = {
     name: "",
     impacts: "",
     expectation: 0.5,
-    addButton: function(){ console.log("eventClicked") }
+    addButton: function(){
+        eventsList.push(this.name);
+        triggerFolder.remove(eventsDropdown);
+        triggerFolder.remove(triggerButton);
+        eventsDropdown = triggerFolder.add(eventTrigger, "event", eventsList).name("Event");
+        triggerButton = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
+    }
 };
 var goal = {
     agentName: "",
     goalName: "",
     importance: 0.5,
-    addButton: function(){ console.log("goalClicked") }
+    addButton: function(){agentsList[this.agentName]["Engine"].addGoal(this.goalName, this.importance);}
 };
 var agent = {
     name: "",
     addButton: function(){ entryMode = true;}
+}
+var eventTrigger = {
+    event: "",
+    triggerButton: function() {alert("It worked!")}
+}
+var otherTriggers = {
+    recalculateButton: function() {alert("recalculating")}
 }
 
 init();
@@ -48,6 +65,13 @@ function init() {
     goalAddition.add(goal, "goalName").name("Goal Name");
     goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
     goalAddition.add(goal, "addButton").name("Add Goal");
+
+    triggerFolder = gui.addFolder("Trigger Events");
+    eventsDropdown = triggerFolder.add(eventTrigger, "event", eventsList).name("Event");
+    triggerButton = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
+
+    var miscellaneous = gui.addFolder("Other Functions");
+    miscellaneous.add(otherTriggers, "recalculateButton").name("Recalculate");
 
     //Set camera location and orient towards origin
     camera.position.set(0,40,0);
@@ -121,3 +145,7 @@ function render() {
 	requestAnimationFrame(render);
 	renderer.render(scene, camera);
 };
+
+function newEvent(name, goal, importance) {
+    agentsList[name]["Engine"].addGoal(goal, importance);
+}
