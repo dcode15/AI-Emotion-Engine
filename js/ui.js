@@ -9,7 +9,7 @@ var floor = new THREE.Mesh(floorPlane, floorMaterial);
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 var gui = new dat.GUI();
 var entryMode = false;
-var agents = {};
+var agentsList = {};
 var event = {
     name: "",
     impacts: "",
@@ -71,32 +71,40 @@ function init() {
     window.addEventListener( 'resize', onWindowResize, false );
 }
 
-function onClick( event ) {
+function onClick(event) {
 
     if(entryMode === true) {
-        var mouse = {x: 0, y: 0};
-        //Just a coordinate system conversion
-        mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
-	    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-	
-        //Create ray and check where it intersects the floor plane
-        var mouseVector = new THREE.Vector3(mouse.x, mouse.y, 1);
-	    mouseVector.unproject(camera);
-	    var ray = new THREE.Raycaster(camera.position, mouseVector.sub(camera.position).normalize());
-	
-        //Location variable holds the point at which the ray intersected the floor
+        if(!(agent.name === "" || agent.name in agentsList)) {
+            var mouse = {x: 0, y: 0};
+            //Just a coordinate system conversion
+            mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-        var intersect = ray.intersectObject(floor);
-        var location = intersect[0].point;
+            //Create ray and check where it intersects the floor plane
+            var mouseVector = new THREE.Vector3(mouse.x, mouse.y, 1);
+            mouseVector.unproject(camera);
+            var ray = new THREE.Raycaster(camera.position, mouseVector.sub(camera.position).normalize());
 
-        var geometry = new THREE.CylinderGeometry(1,1,4,40);
-        var material = new THREE.MeshLambertMaterial({color: 0xcc0000});
-        var newCylinder = new THREE.Mesh(geometry, material);
-        scene.add(newCylinder);
-        //Place cylinder at the location where the ray intersected  the floor
-        newCylinder.position.set(location.x, 0, location.z);
-        //objects.push(newCylinder);
-        entryMode = false;
+            //Location variable holds the point at which the ray intersected the floor
+            var intersect = ray.intersectObject(floor);
+            var location = intersect[0].point;
+
+            var geometry = new THREE.CylinderGeometry(1, 1, 4, 40);
+            var material = new THREE.MeshLambertMaterial({color: 0xcc0000});
+            var newCylinder = new THREE.Mesh(geometry, material);
+
+            //Place cylinder at the location where the ray intersected  the floor
+            newCylinder.position.set(location.x, 0, location.z);
+            agentsList[agent.name] = {};
+            agentsList[agent.name]["Engine"] = new Engine(agent.name);
+            agentsList[agent.name]["Model"] = newCylinder;
+            scene.add(agentsList[agent.name]["Model"]);
+            entryMode = false;
+        }
+        else{
+            alert("Invalid agent name: agent name is either empty or is already in use");
+            entryMode = false;
+        }
     }
 }
 

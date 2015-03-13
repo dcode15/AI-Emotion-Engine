@@ -9,7 +9,7 @@ function Engine(id){
     this.emotions = new Emotions();
     this.name = id;
     this.eval = new Evaluator();
-    this.appraiser = new Appraiser();
+    //this.appraiser = new Appraiser();
 }
 
 Engine.prototype.addEvent = function(name, impacts,  expectation){
