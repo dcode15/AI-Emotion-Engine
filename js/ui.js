@@ -8,19 +8,23 @@ var floor = new THREE.Mesh(floorPlane, floorMaterial);
 //Hemisphere lighting used to light all sides of cylinders, prevents strange lighting effects
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 var gui = new dat.GUI();
-var objects = [];
+var entryMode = false;
+var agents = {};
 var event = {
     name: "",
     impacts: "",
-    expectation: 0.5
+    expectation: 0.5,
+    addButton: function(){ console.log("eventClicked") }
 };
 var goal = {
-    name: "",
-    importance: 0.5
+    agentName: "",
+    goalName: "",
+    importance: 0.5,
+    addButton: function(){ console.log("goalClicked") }
 };
 var agent = {
     name: "",
-    create: function(){ console.log("clicked") }
+    addButton: function(){ entryMode = true;}
 }
 
 init();
@@ -30,17 +34,20 @@ function init() {
 
     //Set up GUI controls
     var agentAddition = gui.addFolder("Add Agent");
-    agentAddition.add(agent, "name");
-    agentAddition.add(agent, "create");
+    agentAddition.add(agent, "name").name("Name");
+    agentAddition.add(agent, "addButton").name("Add Agent");
 
     var eventAddition = gui.addFolder('Add Event');
-    eventAddition.add(event, "name");
-    eventAddition.add(event, "impacts");
-    eventAddition.add(event, "expectation").min(0).max(1).step(.01);
+    eventAddition.add(event, "name").name("Name");
+    eventAddition.add(event, "impacts").name("Goal Impacts");
+    eventAddition.add(event, "expectation").min(0).max(1).step(.01).name("Expectation");
+    eventAddition.add(event, "addButton").name("Add Event");
 
     var goalAddition = gui.addFolder('Add Goal');
-    goalAddition.add(goal, "name");
-    goalAddition.add(goal, "importance").min(0).max(1).step(.01);
+    goalAddition.add(goal, "agentName").name("Agent Name");
+    goalAddition.add(goal, "goalName").name("Goal Name");
+    goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
+    goalAddition.add(goal, "addButton").name("Add Goal");
 
     //Set camera location and orient towards origin
     camera.position.set(0,40,0);
@@ -60,48 +67,38 @@ function init() {
     scene.add(mainLight);
     
     //Create event listener for mouse clicks, triggering onClick()
-    //document.addEventListener('mousedown', onClick, false);
+    document.addEventListener('mousedown', onClick, false);
     window.addEventListener( 'resize', onWindowResize, false );
 }
 
-/*function onClick( event ) {
-    
-    var mouse = {x: 0, y: 0};
-    //Just a coordinate system conversion
-    mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+function onClick( event ) {
+
+    if(entryMode === true) {
+        var mouse = {x: 0, y: 0};
+        //Just a coordinate system conversion
+        mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+	    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 	
-    //Create ray and check where it intersects the floor plane
-    var mouseVector = new THREE.Vector3(mouse.x, mouse.y, 1);
-	mouseVector.unproject(camera);
-	var ray = new THREE.Raycaster(camera.position, mouseVector.sub(camera.position).normalize());
+        //Create ray and check where it intersects the floor plane
+        var mouseVector = new THREE.Vector3(mouse.x, mouse.y, 1);
+	    mouseVector.unproject(camera);
+	    var ray = new THREE.Raycaster(camera.position, mouseVector.sub(camera.position).normalize());
 	
-    //Location variable holds the point at which the ray intersected the floor
-    
-    if(parameters.mode === 'Add') {
+        //Location variable holds the point at which the ray intersected the floor
+
         var intersect = ray.intersectObject(floor);
         var location = intersect[0].point;
-        console.log(location);
 
         var geometry = new THREE.CylinderGeometry(1,1,4,40);
-        var material = new THREE.MeshLambertMaterial({color: parameters.color});
+        var material = new THREE.MeshLambertMaterial({color: 0xcc0000});
         var newCylinder = new THREE.Mesh(geometry, material);
         scene.add(newCylinder);
-        objects.push(newCylinder);
-        //console.log(objects);
-    
         //Place cylinder at the location where the ray intersected  the floor
         newCylinder.position.set(location.x, 0, location.z);
+        //objects.push(newCylinder);
+        entryMode = false;
     }
-    else if(parameters.mode === 'Remove') {
-        var intersects = ray.intersectObjects(objects);
-        if ( intersects.length > 0 ) {
-            var cylinder = intersects[0].object;
-            scene.remove(cylinder);
-            //console.log(objects);
-        }
-    }
-}*/
+}
 
 function onWindowResize(){
 
