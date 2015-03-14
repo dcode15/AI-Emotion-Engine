@@ -16,7 +16,7 @@ Engine.prototype.addEvent = function(name, impacts,  expectation){
     this.events[name] = {};
     this.events[name]["Expectation"] = expectation;
     this.events[name]["Impacts"] = impacts;
-    var desirability = this.eval.eventEval(name, this.goals);
+    var desirability = this.eval.eventEval(name, this.events, this.goals);
     this.events[name]["Desirability"] = desirability;
 }
 
@@ -25,8 +25,8 @@ Engine.prototype.addGoal = function(name, importance) {
 
     var desirability;
     for (var eventName in this.events) {
-        if (dictionary.hasOwnProperty(key)) {
-            desirability = this.eval.eventEval(eventName, this.goals);
+        if (this.events.hasOwnProperty(eventName)) {
+            desirability = this.eval.eventEval(eventName, this.events, this.goals);
             this.events[eventName]["Desirability"] = desirability;
         }
     }
@@ -34,7 +34,6 @@ Engine.prototype.addGoal = function(name, importance) {
 
 Engine.prototype.triggerEvent = function(name) {
     this.emotionalState = this.appraiser.appraiseEvent(name, this.standards, this.emotionalState);
-    console.log(desirability);
 }
 
 function Emotions() {

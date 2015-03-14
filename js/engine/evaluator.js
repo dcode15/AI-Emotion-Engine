@@ -22,22 +22,24 @@ function Evaluator(goals) {
         "Impact HighlyPositive AND Importance ExtremelyImportant THEN Desirability HighlyDesired"];
 
     this.fuzzy = new FuzzySystem([impactVar, importanceVar],[desirabilityVar], rules);
-    this.goals = goals;
 }
 
-Evaluator.prototype.eventEval = function(name, goals) {
+Evaluator.prototype.eventEval = function(name, events, goals) {
     var totalDesirability = 0;
     var affectedGoals = 0;
+    var currentIndex = 0;
 
 
-    for(var impactNum = 0; impactNum<this.events[name]["Impacts"].length; impactNum++){
-        var impactGoal = this.events[name]["Impacts"][impactNum][0];
+    while(currentIndex < events[name]["Impacts"].length){
+        var impactGoal = events[name]["Impacts"][currentIndex];
+        currentIndex++;
 
         if(impactGoal in goals){
-            var impact = this.events["Impacts"][impactNum][1];
+            var impact = events[name]["Impacts"][currentIndex];
             totalDesirability += this.fuzzy.processValue([impact, goals[impactGoal]])["Desirability"];
             affectedGoals++;
         }
+        currentIndex++;
     }
 
     return totalDesirability/affectedGoals;

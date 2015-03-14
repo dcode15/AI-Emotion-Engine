@@ -7,24 +7,29 @@ var floorMaterial = new THREE.MeshLambertMaterial({color: 0x000000, side: THREE.
 var floor = new THREE.Mesh(floorPlane, floorMaterial);
 //Hemisphere lighting used to light all sides of cylinders, prevents strange lighting effects
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
+
+var context;
+var texture;
+var sprite1 = makeTextSprite("Hello")
+sprite1.position.set( 0, 20, 0 );
+scene.add( sprite1 );
+
+
 var gui = new dat.GUI();
 var entryMode = false;
 var triggerFolder;
 var eventsDropdown;
 var triggerButton;
 var agentsList = {};
+var agentNames = [];
 var eventsList = [];
+var INTERSECTED;
+var mouse = {x: 0, y: 0};
 var event = {
     name: "",
     impacts: "",
     expectation: 0.5,
-    addButton: function(){
-        eventsList.push(this.name);
-        triggerFolder.remove(eventsDropdown);
-        triggerFolder.remove(triggerButton);
-        eventsDropdown = triggerFolder.add(eventTrigger, "event", eventsList).name("Event");
-        triggerButton = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
-    }
+    addButton: function(){newEvent(this.name,this.impacts,this.expectation)}
 };
 var goal = {
     agentName: "",
@@ -38,16 +43,21 @@ var agent = {
 }
 var eventTrigger = {
     event: "",
-    triggerButton: function() {alert("It worked!")}
+    triggerButton: function() {
+        for(var agentName in agentsList) {
+            agentsList[agentName]["Engine"].triggerEvent(this.event);
+        }
+    }
 }
 var otherTriggers = {
     recalculateButton: function() {alert("recalculating")}
 }
 
-init();
-render();
+initGUI();
+initScene();
+animate();
 
-function init() {
+function initGUI() {
 
     //Set up GUI controls
     var agentAddition = gui.addFolder("Add Agent");
@@ -72,34 +82,37 @@ function init() {
 
     var miscellaneous = gui.addFolder("Other Functions");
     miscellaneous.add(otherTriggers, "recalculateButton").name("Recalculate");
+}
 
+function initScene() {
     //Set camera location and orient towards origin
     camera.position.set(0,40,0);
     camera.lookAt(new THREE.Vector3(0,0,0));
-    
+
     //Size and add renderer to HTML document
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-    
+
     //Orient floor to be perpendicular to cylinder height and
     //  add the floor to the scene
     floor.position.y = -0.1;
     floor.rotation.x = Math.PI / 2;
+    floor.name = "Floor\nHello";
     scene.add(floor);
-    
+
     //Add hemisphere lighting to scene
     scene.add(mainLight);
-    
+
     //Create event listener for mouse clicks, triggering onClick()
     document.addEventListener('mousedown', onClick, false);
     window.addEventListener( 'resize', onWindowResize, false );
+    document.addEventListener( 'mousemove', onMove, false );
 }
 
-function onClick(event) {
+function onClick(event){
 
     if(entryMode === true) {
         if(!(agent.name === "" || agent.name in agentsList)) {
-            var mouse = {x: 0, y: 0};
             //Just a coordinate system conversion
             mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -122,6 +135,7 @@ function onClick(event) {
             agentsList[agent.name] = {};
             agentsList[agent.name]["Engine"] = new Engine(agent.name);
             agentsList[agent.name]["Model"] = newCylinder;
+            agentsList[agent.name]["Model"].name = agent.name;
             scene.add(agentsList[agent.name]["Model"]);
             entryMode = false;
         }
@@ -132,6 +146,14 @@ function onClick(event) {
     }
 }
 
+function onMove(event){
+    //sprite1.position.set( event.clientX, event.clientY - 20, 0 );
+    sprite1.position.set(0, 20, 0);
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+
 function onWindowResize(){
 
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -139,13 +161,142 @@ function onWindowResize(){
 
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
+
+function update()
+{
+
+    // create a Ray with origin at the mouse position
+    //   and direction into the scene (camera direction)
+    var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
+    vector.unproject(camera);
+    var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+    // create an array containing all objects in the scene with which the ray intersects
+    var intersects = ray.intersectObjects( scene.children );
+
+    // INTERSECTED = the object in the scene currently closest to the camera
+    //		and intersected by the Ray projected from the mouse position
+
+    // if there is one (or more) intersections
+    if ( intersects.length > 0 )
+    {
+        // if the closest object intersected is not the currently stored intersection object
+        if ( intersects[0].object != INTERSECTED )
+        {
+            // update text, if it has a "name" field.
+            if ( intersects[0].object.name )
+            {
+                context.clearRect(0,0,640,480);
+                var message = intersects[ 0 ].object.name;
+                message = message.split("\n");
+                var metrics = context.measureText(message);
+                var width = metrics.width;
+                context.fillStyle = "rgba(0,0,0,0.95)"; // black border
+                context.fillRect( 0,0, width+8,20+8);
+                context.fillStyle = "rgba(255,255,255,0.95)"; // white filler
+                context.fillRect( 2,2, width+4,20+4 );
+                context.fillStyle = "rgba(0,0,0,1)"; // text color
+                for (var i = 0; i<message.length; i++)
+                    context.fillText(message[i], 5,5);
+                texture.needsUpdate = true;
+            }
+            else
+            {
+                context.clearRect(0,0,300,300);
+                texture.needsUpdate = true;
+            }
+        }
+    }
+    else
+    {
+        INTERSECTED = null;
+        context.clearRect(0,0,300,300);
+        texture.needsUpdate = true;
+    }
+}
+
+function animate()
+{
+    requestAnimationFrame(animate);
+    render();
+    update();
+}
       
 function render() {
 
-	requestAnimationFrame(render);
+	//requestAnimationFrame(render);
 	renderer.render(scene, camera);
 };
 
-function newEvent(name, goal, importance) {
-    agentsList[name]["Engine"].addGoal(goal, importance);
+function newEvent(name, impacts, expectation) {
+    if(!(name === "" || name in eventsList)) {
+        eventsList.push(name);
+        triggerFolder.remove(eventsDropdown);
+        triggerFolder.remove(triggerButton);
+        eventsDropdown = triggerFolder.add(eventTrigger, "event", eventsList).name("Event");
+        triggerButton = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
+
+        impacts = impacts.replace(/\s+/g, '');
+        impacts = impacts.split(",");
+        for(var agentName in agentsList) {
+            agentsList[agentName]["Engine"].addEvent(name, impacts, expectation);
+        }
+    }
+    else{
+        alert("Invalid event name: event name is either empty or is already in use");
+    }
+}
+
+
+//http://stackoverflow.com/questions/23514274/three-js-2d-text-sprite-labels
+function makeTextSprite( message, parameters )
+{
+    if ( parameters === undefined ) parameters = {};
+    var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
+    var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
+    var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
+    var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
+    var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
+    var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
+
+    var canvas = document.createElement('canvas');
+    context = canvas.getContext('2d');
+    context.font = "Bold " + fontsize + "px " + fontface;
+    var metrics = context.measureText( message );
+    var textWidth = metrics.width;
+
+    context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
+    context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
+
+    context.lineWidth = borderThickness;
+    roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
+
+    context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
+    context.fillText( message, borderThickness, fontsize + borderThickness);
+
+    texture = new THREE.Texture(canvas)
+    texture.needsUpdate = true;
+
+    var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
+    var sprite = new THREE.Sprite( spriteMaterial );
+    sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
+    return sprite;
+}
+
+//http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
+function roundRect(ctx, x, y, w, h, r)
+{
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 }
