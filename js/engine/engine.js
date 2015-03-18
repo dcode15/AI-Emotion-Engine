@@ -6,10 +6,11 @@ function Engine(id){
     this.goals = {};
     this.events = {};
     this.standards = {};
-    this.emotions = new Emotions();
+    this.emotionalState = new Emotions();
     this.name = id;
     this.eval = new Evaluator();
-    //this.appraiser = new Appraiser();
+    this.appraiser = new Appraiser();
+    this.standards = {};
 }
 
 Engine.prototype.addEvent = function(name, impacts,  expectation){
@@ -18,6 +19,7 @@ Engine.prototype.addEvent = function(name, impacts,  expectation){
     this.events[name]["Impacts"] = impacts;
     var desirability = this.eval.eventEval(name, this.events, this.goals);
     this.events[name]["Desirability"] = desirability;
+    console.log(this.events);
 }
 
 Engine.prototype.addGoal = function(name, importance) {
@@ -33,7 +35,8 @@ Engine.prototype.addGoal = function(name, importance) {
 }
 
 Engine.prototype.triggerEvent = function(name) {
-    this.emotionalState = this.appraiser.appraiseEvent(name, this.standards, this.emotionalState);
+    this.emotionalState = this.appraiser.appraiseEvent(name, this.standards, this.emotionalState, this.events);
+    console.log(this.emotionalState);
 }
 
 function Emotions() {

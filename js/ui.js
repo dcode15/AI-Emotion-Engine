@@ -11,13 +11,16 @@ var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 var context;
 var texture;
 var sprite1 = makeTextSprite("Hello")
-sprite1.position.set( 0, 20, 0 );
-scene.add( sprite1 );
+//sprite1.position.set( 0, 20, 0 );
+//scene.add( sprite1 );
 
 
 var gui = new dat.GUI();
 var entryMode = false;
 var triggerFolder;
+var agentAddition;
+var agentButton;
+var agentsDropdown;
 var eventsDropdown;
 var triggerButton;
 var agentsList = {};
@@ -39,7 +42,14 @@ var goal = {
 };
 var agent = {
     name: "",
-    addButton: function(){ entryMode = true;}
+    addButton: function(){
+        if(!(agent.name === "" || agent.name in agentsList)) {
+            entryMode = true;
+        }
+        else{
+            alert("Invalid agent name: agent name is either empty or is already in use");
+        }
+    }
 }
 var eventTrigger = {
     event: "",
@@ -112,37 +122,32 @@ function initScene() {
 function onClick(event){
 
     if(entryMode === true) {
-        if(!(agent.name === "" || agent.name in agentsList)) {
-            //Just a coordinate system conversion
-            mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        //Just a coordinate system conversion
+        mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-            //Create ray and check where it intersects the floor plane
-            var mouseVector = new THREE.Vector3(mouse.x, mouse.y, 1);
-            mouseVector.unproject(camera);
-            var ray = new THREE.Raycaster(camera.position, mouseVector.sub(camera.position).normalize());
+        //Create ray and check where it intersects the floor plane
+        var mouseVector = new THREE.Vector3(mouse.x, mouse.y, 1);
+        mouseVector.unproject(camera);
+        var ray = new THREE.Raycaster(camera.position, mouseVector.sub(camera.position).normalize());
 
-            //Location variable holds the point at which the ray intersected the floor
-            var intersect = ray.intersectObject(floor);
-            var location = intersect[0].point;
+        //Location variable holds the point at which the ray intersected the floor
+        var intersect = ray.intersectObject(floor);
+        var location = intersect[0].point;
 
-            var geometry = new THREE.CylinderGeometry(1, 1, 4, 40);
-            var material = new THREE.MeshLambertMaterial({color: 0xcc0000});
-            var newCylinder = new THREE.Mesh(geometry, material);
+        var geometry = new THREE.CylinderGeometry(1, 1, 4, 40);
+        var material = new THREE.MeshLambertMaterial({color: 0xcc0000});
+        var newCylinder = new THREE.Mesh(geometry, material);
 
-            //Place cylinder at the location where the ray intersected  the floor
-            newCylinder.position.set(location.x, 0, location.z);
-            agentsList[agent.name] = {};
-            agentsList[agent.name]["Engine"] = new Engine(agent.name);
-            agentsList[agent.name]["Model"] = newCylinder;
-            agentsList[agent.name]["Model"].name = agent.name;
-            scene.add(agentsList[agent.name]["Model"]);
-            entryMode = false;
-        }
-        else{
-            alert("Invalid agent name: agent name is either empty or is already in use");
-            entryMode = false;
-        }
+        //Place cylinder at the location where the ray intersected  the floor
+        newCylinder.position.set(location.x, 0, location.z);
+        agentNames.push(agent.name);
+        agentsList[agent.name] = {};
+        agentsList[agent.name]["Engine"] = new Engine(agent.name);
+        agentsList[agent.name]["Model"] = newCylinder;
+        agentsList[agent.name]["Model"].name = agent.name;
+        scene.add(agentsList[agent.name]["Model"]);
+        entryMode = false;
     }
 }
 
@@ -219,12 +224,12 @@ function animate()
 {
     requestAnimationFrame(animate);
     render();
-    update();
+    //update();
 }
       
 function render() {
 
-	//requestAnimationFrame(render);
+	requestAnimationFrame(render);
 	renderer.render(scene, camera);
 };
 
