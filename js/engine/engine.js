@@ -9,7 +9,7 @@ function Engine(id){
     this.emotionalState = new Emotions();
     this.name = id;
     this.eval = new Evaluator();
-    this.appraiser = new Appraiser();
+    this.appraiser = new Appraiser(id);
     this.standards = {};
 }
 
@@ -35,7 +35,9 @@ Engine.prototype.addGoal = function(name, importance) {
 }
 
 Engine.prototype.triggerEvent = function(name) {
-    this.emotionalState = this.appraiser.appraiseEvent(name, this.standards, this.emotionalState, this.events);
+    console.log(name);
+    console.log(this.events);
+    this.emotionalState = this.appraiser.appraiseEvent(name, this.emotionalState, this.events);
     console.log(this.emotionalState);
 }
 

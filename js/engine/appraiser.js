@@ -1,21 +1,21 @@
-function Appraiser() {}
+function Appraiser(name) {this.name = name;}
 
 Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events) {
     var newEmotions = oldEmotions;
 
-    if(this.events[name]["Desirability"] > 0){
-        newEmotions.state["Joy"] += (1.7*Math.pow(this.events[name]["Expectation"],0.5)) + (0.7*desirability);
+    if(events[name]["Desirability"] > 0){
+        newEmotions.state["Joy"] += (1.7*Math.pow(events[name]["Expectation"],0.5)) + (0.7*events[name]["Desirability"]);
     }
-    if(this.events[name]["Desirability"] > 0){
-        newEmotions.state["Sad"] += (2*Math.pow(this.events[name]["Expectation"],2))-desirability;
+    if(events[name]["Desirability"] < 0){
+        newEmotions.state["Sad"] += (2*Math.pow(events[name]["Expectation"],2))-events[name]["Desirability"];
     }
 
     newEmotions.state["Fear"] = this.calculateFear(events);
     newEmotions.state["Hope"] = this.calculateHope(events);
-    newEmotions.state["Anger"] = Math.max(newEmotions.state["Sad"],newEmotions.state["Reproach"]);
-    newEmotions.state["Gratitude"] = Math.max(newEmotions.state["Joy"],newEmotions.state["Admiration"]);
-    newEmotions.state["Gratification"] = Math.max(newEmotions.state["Joy"],newEmotions.state["Pride"]);
-    newEmotions.state["Remorse"] = Math.max(newEmotions.state["Sad"],newEmotions.state["Shame"]);
+    newEmotions.state["Anger"] = Math.min(newEmotions.state["Sad"],newEmotions.state["Reproach"]);
+    newEmotions.state["Gratitude"] = Math.min(newEmotions.state["Joy"],newEmotions.state["Admiration"]);
+    newEmotions.state["Gratification"] = Math.min(newEmotions.state["Joy"],newEmotions.state["Pride"]);
+    newEmotions.state["Remorse"] = Math.min(newEmotions.state["Sad"],newEmotions.state["Shame"]);
 
     return newEmotions;
 }
