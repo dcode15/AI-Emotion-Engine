@@ -10,6 +10,7 @@ function Engine(id){
     this.name = id;
     this.eval = new Evaluator();
     this.appraiser = new Appraiser(id);
+    this.filter = new Filter();
     this.standards = {};
 }
 
@@ -38,6 +39,7 @@ Engine.prototype.triggerEvent = function(name) {
     console.log(name);
     console.log(this.events);
     this.emotionalState = this.appraiser.appraiseEvent(name, this.emotionalState, this.events);
+    this.emotionalState = this.filter.applyRules(this.emotionalState);
     console.log(this.emotionalState);
 }
 

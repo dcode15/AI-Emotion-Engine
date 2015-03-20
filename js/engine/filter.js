@@ -1,21 +1,21 @@
-function filter() {
+function Filter() {
     this.motivations = {};
     this.rules = [];
 }
 
-filter.prototype.addRule = function(rule){
+Filter.prototype.addRule = function(rule){
     this.rules.push(rule.split(" "));
 }
 
-filter.prototype.setMotivation = function(motivation, value) {
+Filter.prototype.setMotivation = function(motivation, value) {
     this.motivations[motivation] = value;
 }
 
-filter.prototype.changeMotivation = function(motivation, change) {
+Filter.prototype.changeMotivation = function(motivation, change) {
     this.motivations[motivation] += change;
 }
 
-filter.prototype.applyRules = function(emotions) {
+Filter.prototype.applyRules = function(emotions) {
     for(var ruleNum = 0; ruleNum < this.rules.length; ruleNum++) {
         var rule = this.rules[ruleNum];
         var overallTruth = false;
@@ -92,7 +92,7 @@ filter.prototype.applyRules = function(emotions) {
 }*/
 
 
-filter.prototype.checkRelation = function(motivation, relationalOp, value) {
+Filter.prototype.checkRelation = function(motivation, relationalOp, value) {
 
     var relation = false;
     if(motivation in this.motivations) {
