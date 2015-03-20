@@ -11,7 +11,6 @@ function Engine(id){
     this.eval = new Evaluator();
     this.appraiser = new Appraiser(id);
     this.filter = new Filter();
-    this.standards = {};
 }
 
 Engine.prototype.addEvent = function(name, impacts,  expectation){
