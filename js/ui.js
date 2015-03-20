@@ -194,11 +194,9 @@ function calculateColor(emotions) {
 
     console.log(emotions);
     for(var emotion in emotions.state) {
-        console.log(emotion)
         if(emotions.state[emotion] > 0) {
             var color = colors[emotion];
             color = shadeColor(color, emotions.state[emotion]*20);
-            console.log(color);
             totalR += color[0];
             totalG += color[1];
             totalB += color[2];
@@ -206,20 +204,16 @@ function calculateColor(emotions) {
         }
     }
 
-    console.log(totalR);
-    console.log(totalColors);
     var avgR = Math.round(totalR/totalColors);
     var avgG = Math.round(totalG/totalColors);
     var avgB = Math.round(totalB/totalColors);
     var colorString = "rgb(" + avgR.toString() + "," + avgG.toString() + "," + avgB.toString() + ")";
-    console.log(colorString);
     var color = new THREE.Color(colorString);
 
-    console.log(color);
     return color;
 }
 
-//http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+//Modified from http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
 function shadeColor(color, percent) {
 
     var R = parseInt(color.substring(1,3),16);
