@@ -4,7 +4,7 @@ function filter() {
 }
 
 filter.prototype.addRule = function(rule){
-    this.rules.push(rule.split[" "]);
+    this.rules.push(rule.split(" "));
 }
 
 filter.prototype.setMotivation = function(motivation, value) {
@@ -18,23 +18,78 @@ filter.prototype.changeMotivation = function(motivation, change) {
 filter.prototype.applyRules = function(emotions) {
     for(var ruleNum = 0; ruleNum < this.rules.length; ruleNum++) {
         var rule = this.rules[ruleNum];
-        var truth = false;
+        var overallTruth = false;
         var motivation = rule[0];
         var relationalOp = rule[1];
         var value = rule[2];
-        truth = this.checkRelation(motivation, relationalOp, value);
+        overallTruth = this.checkRelation(motivation, relationalOp, value);
         var logicOp = rule[3].toLowerCase();
         var tokenNum = 4;
 
         while(logicOp !== "then") {
-            
+            motivation = rule[tokenNum];
+            tokenNum++;
+            relationalOp = rule[tokenNum];
+            tokenNum++;
+            value = rule[tokenNum];
+            tokenNum++;
+
+            var expTruth = this.checkRelation(motivation, relationalOp, value);
+            if(logicOp === "and") {
+                overallTruth = overallTruth && expTruth;
+            }
+            else if(logicOp === "or") {
+                overallTruth = overallTruth || expTruth;
+            }
+
+            logicOp = rule[tokenNum].toLowerCase();
+            tokenNum++;
         }
 
-        if(truth) {
+        if(overallTruth) {
             emotions.state[rule[tokenNum]] = 0;
         }
     }
+    return emotions;
 }
+
+/*function applyRules(emotions) {
+    for(var ruleNum = 0; ruleNum < rules.length; ruleNum++) {
+        var rule = rules[ruleNum];
+        var overallTruth = false;
+        var motivation = rule[0];
+        var relationalOp = rule[1];
+        var value = rule[2];
+        overallTruth = checkRelation(motivation, relationalOp, value);
+        var logicOp = rule[3].toLowerCase();
+        var tokenNum = 4;
+
+        while(logicOp !== "then") {
+            motivation = rule[tokenNum];
+            tokenNum++;
+            relationalOp = rule[tokenNum];
+            tokenNum++;
+            value = rule[tokenNum];
+            tokenNum++;
+
+            var expTruth = checkRelation(motivation, relationalOp, value);
+            if(logicOp === "and") {
+                overallTruth = overallTruth && expTruth;
+            }
+            else if(logicOp === "or") {
+                overallTruth = overallTruth || expTruth;
+            }
+
+            logicOp = rule[tokenNum].toLowerCase();
+            tokenNum++;
+        }
+
+        if(overallTruth) {
+            emotions.state[rule[tokenNum]] = 0;
+        }
+    }
+    return emotions;
+}*/
 
 
 filter.prototype.checkRelation = function(motivation, relationalOp, value) {
