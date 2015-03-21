@@ -10,14 +10,16 @@ var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 
 var gui = new dat.GUI();
 var entryMode = false;
+var goalAddition;
+var agentDropdown;
+var goalField;
+var importanceSlider;
+var addGoalButton;
 var triggerFolder;
-var agentAddition;
-var agentButton;
-var agentsDropdown;
 var eventsDropdown;
 var trigger;
 var agentsList = {};
-var agentNames = [];
+var agentNames = [" "];
 var eventsList = [" "];
 var mouse = {x: 0, y: 0};
 var event = {
@@ -27,16 +29,23 @@ var event = {
     addButton: function(){newEvent(this.name,this.impacts,this.expectation)}
 };
 var goal = {
-    agentName: "",
+    agentName: " ",
     goalName: "",
     importance: 0.5,
-    addButton: function(){agentsList[this.agentName]["Engine"].addGoal(this.goalName, this.importance);}
+    addButton: function() {
+        if (this.agentName !== " ") {
+            agentsList[this.agentName]["Engine"].addGoal(this.goalName, this.importance);
+        }
+        else {
+            alert("Please select an agent");
+        }
+    }
 };
 var agent = {
     name: "",
     addButton: function(){
         if(!(agent.name === "" || agent.name in agentsList)) {
-            entryMode = true;
+            newAgent(this.name);
         }
         else{
             alert("Invalid agent name: agent name is either empty or is already in use");
@@ -73,11 +82,11 @@ function initGUI() {
     eventAddition.add(event, "expectation").min(0).max(1).step(.01).name("Expectation");
     eventAddition.add(event, "addButton").name("Add Event");
 
-    var goalAddition = gui.addFolder('Add Goal');
-    goalAddition.add(goal, "agentName").name("Agent Name");
-    goalAddition.add(goal, "goalName").name("Goal Name");
-    goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
-    goalAddition.add(goal, "addButton").name("Add Goal");
+    goalAddition = gui.addFolder('Add Goal');
+    agentDropdown = goalAddition.add(goal, "agentName", agentNames).name("Agent Name");
+    goalField = goalAddition.add(goal, "goalName").name("Goal Name");
+    importanceSlider = goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
+    addGoalButton = goalAddition.add(goal, "addButton").name("Add Goal");
 
     triggerFolder = gui.addFolder("Trigger Events");
     eventsDropdown = triggerFolder.add(eventTrigger, "eventName", eventsList).name("Event");
@@ -133,9 +142,8 @@ function onClick(event){
 
         //Place cylinder at the location where the ray intersected  the floor
         newCylinder.position.set(location.x, 0, location.z);
-        agentNames.push(agent.name);
         agentsList[agent.name] = {};
-        agentsList[agent.name]["Engine"] = new Engine(agent.name);
+        agentsList[agent.name]["Engine"] = new Engine(agent.name, 0.4);
         agentsList[agent.name]["Model"] = newCylinder;
         agentsList[agent.name]["Model"].name = agent.name;
         scene.add(agentsList[agent.name]["Model"]);
@@ -158,8 +166,24 @@ function render() {
 	renderer.render(scene, camera);
 };
 
+function newAgent(name) {
+    entryMode = true;
+    agentNames.push(name);
+    console.log(agentNames);
+
+    goalAddition.remove(agentDropdown);
+    goalAddition.remove(goalField);
+    goalAddition.remove(importanceSlider);
+    goalAddition.remove(addGoalButton);
+
+    agentDropdown = goalAddition.add(goal, "agentName", agentNames).name("Agent Name");
+    goalField = goalAddition.add(goal, "goalName").name("Goal Name");
+    importanceSlider = goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
+    addGoalButton = goalAddition.add(goal, "addButton").name("Add Goal");
+}
+
 function newEvent(name, impacts, expectation) {
-    if(!(name === "" || name in eventsList)) {
+    if(!(name === " " || name in eventsList)) {
         eventsList.push(name);
         triggerFolder.remove(eventsDropdown);
         triggerFolder.remove(trigger);

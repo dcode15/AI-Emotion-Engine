@@ -2,7 +2,7 @@
  * Created by Douglas on 2/18/2015.
  */
 
-function Engine(id){
+function Engine(id, decayConstant){
     this.goals = {};
     this.events = {};
     this.standards = {};
@@ -11,6 +11,7 @@ function Engine(id){
     this.eval = new Evaluator();
     this.appraiser = new Appraiser(id);
     this.filter = new Filter();
+    this.decayConstant = decayConstant;
 }
 
 Engine.prototype.addEvent = function(name, impacts,  expectation){
@@ -19,7 +20,6 @@ Engine.prototype.addEvent = function(name, impacts,  expectation){
     this.events[name]["Impacts"] = impacts;
     var desirability = this.eval.eventEval(name, this.events, this.goals);
     this.events[name]["Desirability"] = desirability;
-    console.log(this.events);
 }
 
 Engine.prototype.addGoal = function(name, importance) {
@@ -35,11 +35,15 @@ Engine.prototype.addGoal = function(name, importance) {
 }
 
 Engine.prototype.triggerEvent = function(name) {
-    console.log(name);
-    console.log(this.events);
     this.emotionalState = this.appraiser.appraiseEvent(name, this.emotionalState, this.events);
     this.emotionalState = this.filter.applyRules(this.emotionalState);
     console.log(this.emotionalState);
+}
+
+Engine.prototype.decay = function() {
+    for(var emotion in this.emotionalState.state) {
+        this.emotionalState.state[emotion] = this.emotionalState.state[emotion] * this.decayConstant;
+    }
 }
 
 function Emotions() {
