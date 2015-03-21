@@ -46,6 +46,14 @@ Engine.prototype.decay = function() {
     }
 }
 
+Engine.prototype.setMotivation = function(motivation, value) {
+    this.filter.setMotivation(motivation, value);
+}
+
+Engine.prototype.addFilter = function(rule) {
+    this.filter.addRule(rule);
+}
+
 function Emotions() {
     this.state = {"Joy":0,"Sad":0,"Disappointment":0,"Relief":0,"Hope":0,"Fear":0,"Pride":0,
         "Shame":0,"Reproach":0,"Admiration":0,"Anger":0, "Gratitude":0,"Gratification":0,"Remorse":0};

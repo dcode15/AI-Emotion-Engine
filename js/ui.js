@@ -15,6 +15,13 @@ var agentDropdown;
 var goalField;
 var importanceSlider;
 var addGoalButton;
+var motivationFolder;
+var motivationAgent;
+var motivationName;
+var motivationValue;
+var setMotivation;
+var motivationRule;
+var addMotivationRule;
 var triggerFolder;
 var eventsDropdown;
 var trigger;
@@ -61,6 +68,14 @@ var eventTrigger = {
         updateColors();
     }
 }
+var motivations = {
+    name: " ",
+    motivation: "",
+    value: 0,
+    setMotivationButton: function() {},
+    rule: "",
+    addRuleButton: function() {}
+}
 var otherTriggers = {
     recalculateButton: function() {alert("recalculating")}
 }
@@ -91,6 +106,14 @@ function initGUI() {
     triggerFolder = gui.addFolder("Trigger Events");
     eventsDropdown = triggerFolder.add(eventTrigger, "eventName", eventsList).name("Event");
     trigger = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
+
+    motivationFolder = gui.addFolder('Motivations');
+    motivationAgent = motivationFolder.add(motivations, "name", agentNames).name("Agent Name");
+    motivationName = motivationFolder.add(motivations, "motivation").name("Motivation Name");
+    motivationValue = motivationFolder.add(motivations, "value").name("Motivation Value");
+    setMotivation = motivationFolder.add(motivations, "setMotivationButton").name("Set Motivation");
+    motivationRule = motivationFolder.add(motivations, "rule").name("Inhibition Rule");
+    addMotivationRule = motivationFolder.add(motivations, "addRuleButton").name("Add Rule");
 
     var miscellaneous = gui.addFolder("Other Functions");
     miscellaneous.add(otherTriggers, "recalculateButton").name("Recalculate");
@@ -169,7 +192,6 @@ function render() {
 function newAgent(name) {
     entryMode = true;
     agentNames.push(name);
-    console.log(agentNames);
 
     goalAddition.remove(agentDropdown);
     goalAddition.remove(goalField);
@@ -180,6 +202,20 @@ function newAgent(name) {
     goalField = goalAddition.add(goal, "goalName").name("Goal Name");
     importanceSlider = goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
     addGoalButton = goalAddition.add(goal, "addButton").name("Add Goal");
+
+    motivationFolder.remove(motivationAgent);
+    motivationFolder.remove(motivationName);
+    motivationFolder.remove(motivationValue);
+    motivationFolder.remove(setMotivation);
+    motivationFolder.remove(motivationRule);
+    motivationFolder.remove(addMotivationRule);
+
+    motivationAgent = motivationFolder.add(motivations, "name", agentNames).name("Agent Name");
+    motivationName = motivationFolder.add(motivations, "motivation").name("Motivation Name");
+    motivationValue = motivationFolder.add(motivations, "value").name("Motivation Value");
+    setMotivation = motivationFolder.add(motivations, "setMotivationButton").name("Set Motivation");
+    motivationRule = motivationFolder.add(motivations, "rule").name("Inhibition Rule");
+    addMotivationRule = motivationFolder.add(motivations, "addRuleButton").name("Add Rule");
 }
 
 function newEvent(name, impacts, expectation) {
