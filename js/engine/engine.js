@@ -15,11 +15,15 @@ function Engine(id, decayConstant){
 }
 
 Engine.prototype.addEvent = function(name, impacts,  expectation){
-    this.events[name] = {};
-    this.events[name]["Expectation"] = expectation;
-    this.events[name]["Impacts"] = impacts;
-    var desirability = this.eval.eventEval(name, this.events, this.goals);
-    this.events[name]["Desirability"] = desirability;
+    if(!(name in this.events)) {
+        this.events[name] = {};
+        this.events[name]["Expectation"] = expectation;
+        this.events[name]["Impacts"] = impacts;
+        var desirability = this.eval.eventEval(name, this.events, this.goals);
+        this.events[name]["Desirability"] = desirability;
+        console.log(this.name);
+        console.log(this.events)
+    }
 }
 
 Engine.prototype.addGoal = function(name, importance) {

@@ -14,7 +14,7 @@ BehaviorSelector.prototype.addRule  = function(emotionalConditions, event, cause
     this.rules.push(newRule);
 }
 
-BehaviorSelector.prototype.applyRules = function(eventName, cause, emotions) {
+/*BehaviorSelector.prototype.applyRules = function(eventName, cause, emotions) {
     for(var ruleNum = 0; ruleNum < this.rules.length; ruleNum++) {
         var rule = this.rules[ruleNum];
 
@@ -28,4 +28,8 @@ BehaviorSelector.prototype.applyRules = function(eventName, cause, emotions) {
             }
         }
     }
+}*/
+
+BehaviorSelector.prototype.applyRules = function(eventName, cause, emotions) {
+
 }

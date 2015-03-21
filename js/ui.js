@@ -25,15 +25,22 @@ var addMotivationRule;
 var triggerFolder;
 var eventsDropdown;
 var trigger;
+var infoFolder;
+var infoName;
+var infoType;
+var infoButton;
 var agentsList = {};
 var agentNames = [" "];
 var eventsList = [" "];
 var mouse = {x: 0, y: 0};
+
 var event = {
     name: "",
     impacts: "",
     expectation: 0.5,
-    addButton: function(){newEvent(this.name,this.impacts,this.expectation)}
+    addButton: function(){
+        newEvent(this.name,this.impacts,this.expectation);
+    }
 };
 var goal = {
     agentName: " ",
@@ -42,9 +49,10 @@ var goal = {
     addButton: function() {
         if (this.agentName !== " ") {
             agentsList[this.agentName]["Engine"].addGoal(this.goalName, this.importance);
+            swal("Goal Added!","","success");
         }
         else {
-            alert("Please select an agent");
+            swal("Please select an agent","","error");
         }
     }
 };
@@ -55,7 +63,7 @@ var agent = {
             newAgent(this.name);
         }
         else{
-            alert("Invalid agent name: agent name is either empty or is already in use");
+            swal("Agent name is either empty or is already in use.","","error");
         }
     }
 }
@@ -77,7 +85,12 @@ var motivations = {
     addRuleButton: function() {}
 }
 var otherTriggers = {
-    recalculateButton: function() {alert("recalculating")}
+    recalculateButton: function() {swal("","recalculating\nreally tho\nplease god let this work", "error")}
+}
+var information = {
+    name: " ",
+    informationType: "Emotions",
+    informationButton: function() {swal(this.informationType)}
 }
 
 initGUI();
@@ -117,6 +130,12 @@ function initGUI() {
 
     var miscellaneous = gui.addFolder("Other Functions");
     miscellaneous.add(otherTriggers, "recalculateButton").name("Recalculate");
+
+    infoFolder = gui.addFolder("Info");
+    var dataTypes = ["Emotions", "Goals", "Events", "Motivations"];
+    infoName = info.add(information, "name", agentNames).name("Agent Name");
+    infoType = info.add(information, "informationType", dataTypes).name("Info Type");
+    infoButton = info.add(information, "informationButton").name("Show Information");
 }
 
 function initScene() {
@@ -160,7 +179,7 @@ function onClick(event){
         var location = intersect[0].point;
 
         var geometry = new THREE.CylinderGeometry(1, 1, 4, 40);
-        var material = new THREE.MeshLambertMaterial({color: 0xcc0000});
+        var material = new THREE.MeshLambertMaterial({color: 0xa8a8a8});
         var newCylinder = new THREE.Mesh(geometry, material);
 
         //Place cylinder at the location where the ray intersected  the floor
@@ -219,7 +238,7 @@ function newAgent(name) {
 }
 
 function newEvent(name, impacts, expectation) {
-    if(!(name === " " || name in eventsList)) {
+    if(!(name === "" || name in eventsList || impacts === "")) {
         eventsList.push(name);
         triggerFolder.remove(eventsDropdown);
         triggerFolder.remove(trigger);
@@ -231,12 +250,22 @@ function newEvent(name, impacts, expectation) {
         for(var agentName in agentsList) {
             agentsList[agentName]["Engine"].addEvent(name, impacts, expectation);
         }
+        swal("Event Added!","","success");
     }
     else{
-        alert("Invalid event name: event name is either empty or is already in use");
+        swal("Event name is either empty or is already in use.","","error");
     }
 }
 
+
+
+
+
+/*
+ *
+ * COLOR DETERMINATION FUNCTIONS
+ *
+ */
 function updateColors() {
     for(var agentName in agentsList) {
         var color = calculateColor(agentsList[agentName]["Engine"].emotionalState);
@@ -252,11 +281,10 @@ function calculateColor(emotions) {
     var colors = {"Joy":"#8f7700","Sad":"#05008f","Disappointment":"#00458F","Relief":"#8F008C","Hope":"#8F002B","Fear":"#5A8F00","Pride":"#8F3E00",
         "Shame":"#008f6b","Reproach":"#8F2D00","Admiration":"#58008F","Anger":"#8F0000", "Gratitude":"#00648F","Gratification":"#078F00","Remorse":"#4A008F"};
 
-    console.log(emotions);
     for(var emotion in emotions.state) {
         if(emotions.state[emotion] > 0) {
             var color = colors[emotion];
-            color = shadeColor(color, emotions.state[emotion]*20);
+            color = shadeColor(color, emotions.state[emotion]*40);
             totalR += color[0];
             totalG += color[1];
             totalB += color[2];
