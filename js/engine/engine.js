@@ -41,7 +41,7 @@ Engine.prototype.addGoal = function(name, importance) {
     }
 }
 
-Engine.prototype.triggerEvent = function(name) {
+Engine.prototype.triggerEvent = function(name, objects) {
     this.emotionalState = this.appraiser.appraiseEvent(name, this.emotionalState, this.events);
     this.emotionalState = this.filter.applyRules(this.emotionalState);
     console.log(this.emotionalState);
@@ -59,6 +59,22 @@ Engine.prototype.setMotivation = function(motivation, value) {
 
 Engine.prototype.addFilter = function(rule) {
     this.filter.addRule(rule);
+}
+
+Engine.prototype.provideFeedback = function(behavior, feedback) {
+    if(behavior in this.standards) {
+        this.standards[behavior]["Overall"] += feedback;
+        this.standards[behavior]["Count"]++;
+    }
+    else {
+        this.standards[behavior] = {};
+        this.standards[behavior]["Overall"] = feedback;
+        this.standards[behavior]["Count"] = 1;
+    }
+}
+
+Engine.prototype.triggerBehavior = function(behavior, agentName) {
+    this.emotionalState = this.appraiser.appraiseBehavior(behavior, agentName, this.emotionalState, this.standards);
 }
 
 function Emotions() {

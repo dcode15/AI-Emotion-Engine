@@ -34,11 +34,20 @@ var motivationRule;
 var addMotivationRule;
 var triggerFolder;
 var eventsDropdown;
+var eventObjects;
 var trigger;
 var infoFolder;
 var infoName;
 var infoType;
 var infoButton;
+var feedbackFolder;
+var feedbackName;
+var feedbackBehavior;
+var feedbackValue;
+var feedbackTrigger;
+var behaviorActor;
+var behaviorButton;
+
 var agentsList = {};
 var agentNames = [" "];
 var eventsList = [" "];
@@ -77,6 +86,7 @@ var agent = {
 }
 var eventTrigger = {
     eventName: " ",
+    associatedObjects: "",
     triggerButton: function() {
         if(!(this.eventName === " ")) {
             for (var agentName in agentsList) {
@@ -98,12 +108,41 @@ var motivations = {
     addRuleButton: function() {}
 }
 var otherTriggers = {
-    recalculateButton: function() {swal("","recalculating\nreally tho\nplease god let this work", "error")}
+    decayButton: function() {
+        for (var agentName in agentsList) {
+            agentsList[agentName]["Engine"].decay();
+        }
+        updateColors();
+    }
 }
 var information = {
     name: " ",
     informationType: "Emotions",
     informationButton: function() {outputInfo(this.name, this.informationType)}
+}
+var feedback = {
+    name: " ",
+    behavior: "",
+    value: 0.5,
+    feedbackButton: function() {
+        if(!(this.name === " " || this.behavior === "")) {
+            agentsList[this.name]["Engine"].provideFeedback(this.behavior, this.value);
+            swal("Feedback provided!", "", "success");
+        }
+        else {
+            swal("Please enter a behavior.", "", "error");
+        }
+    },
+    actorName: " ",
+    behaviorTrigger: function() {
+        if(!(this.actorName === " " || this.behavior === "")) {
+            agentsList[this.name]["Engine"].triggerBehavior(this.behavior, this.actorName);
+            updateColors();
+        }
+        else {
+            swal("Please enter a behavior.", "", "error");
+        }
+    }
 }
 
 
@@ -140,6 +179,7 @@ function initGUI() {
 
     triggerFolder = gui.addFolder("Trigger Events");
     eventsDropdown = triggerFolder.add(eventTrigger, "eventName", eventsList).name("Event");
+    eventObjects = triggerFolder.add(eventTrigger, "associatedObjects").name("Associated Items");
     trigger = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
 
     motivationFolder = gui.addFolder('Motivations');
@@ -150,8 +190,16 @@ function initGUI() {
     motivationRule = motivationFolder.add(motivations, "rule").name("Inhibition Rule");
     addMotivationRule = motivationFolder.add(motivations, "addRuleButton").name("Add Rule");
 
+    feedbackFolder = gui.addFolder("Standards");
+    feedbackName = feedbackFolder.add(feedback, "name", agentNames).name("Agent Name");
+    feedbackBehavior = feedbackFolder.add(feedback, "behavior").name("Behavior");
+    feedbackValue = feedbackFolder.add(feedback, "value").min(-3).max(3).step(.1).name("Value");
+    feedbackTrigger = feedbackFolder.add(feedback, "feedbackButton").name("Provide Feedback");
+    behaviorActor = feedbackFolder.add(feedback, "actorName", agentNames).name("Behavior Actor");
+    behaviorButton = feedbackFolder.add(feedback, "behaviorTrigger").name("Trigger Behavior");
+
     var miscellaneous = gui.addFolder("Other Functions");
-    miscellaneous.add(otherTriggers, "recalculateButton").name("Recalculate");
+    miscellaneous.add(otherTriggers, "decayButton").name("Decay");
 
     infoFolder = gui.addFolder("Info");
     var dataTypes = ["Emotions", "Goals", "Events", "Motivations"];
@@ -266,6 +314,20 @@ function newAgent(name) {
     infoName = infoFolder.add(information, "name", agentNames).name("Agent Name");
     infoType = infoFolder.add(information, "informationType", dataTypes).name("Info Type");
     infoButton = infoFolder.add(information, "informationButton").name("Show Information");
+
+    feedbackFolder.remove(feedbackName);
+    feedbackFolder.remove(feedbackBehavior);
+    feedbackFolder.remove(feedbackValue);
+    feedbackFolder.remove(feedbackTrigger);
+    feedbackFolder.remove(behaviorActor);
+    feedbackFolder.remove(behaviorButton);
+
+    feedbackName = feedbackFolder.add(feedback, "name", agentNames).name("Agent Name");
+    feedbackBehavior = feedbackFolder.add(feedback, "behavior").name("Behavior");
+    feedbackValue = feedbackFolder.add(feedback, "value").min(-3).max(3).step(.1).name("Value");
+    feedbackTrigger = feedbackFolder.add(feedback, "feedbackButton").name("Provide Feedback");
+    behaviorActor = feedbackFolder.add(feedback, "actorName", agentNames).name("Behavior Actor");
+    behaviorButton = feedbackFolder.add(feedback, "behaviorTrigger").name("Trigger Behavior");
 }
 
 function newEvent(name, impacts, expectation) {
@@ -273,7 +335,10 @@ function newEvent(name, impacts, expectation) {
         eventsList.push(name);
         triggerFolder.remove(eventsDropdown);
         triggerFolder.remove(trigger);
+        triggerFolder.remove(eventObjects);
+
         eventsDropdown = triggerFolder.add(eventTrigger, "eventName", eventsList).name("Event");
+        eventObjects = triggerFolder.add(eventTrigger, "associatedObjects").name("Associated Items");
         trigger = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
 
         impacts = impacts.replace(/\s+/g, '');
@@ -315,7 +380,7 @@ function calculateColor(emotions) {
     for(var emotion in emotions.state) {
         if(emotions.state[emotion] > 0) {
             var color = colors[emotion];
-            color = shadeColor(color, emotions.state[emotion]*40);
+            color = shadeColor(color, emotions.state[emotion]*30);
             totalR += color[0];
             totalG += color[1];
             totalB += color[2];

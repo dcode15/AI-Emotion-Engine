@@ -23,20 +23,24 @@ Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events) {
 Appraiser.prototype.appraiseBehavior = function(behaviorName, agentName, oldEmotions, standards) {
     var newEmotions = oldEmotions;
 
-    if(agentName === this.name) {
-        if(standards[behaviorName] >= 0) {
-            newEmotions.state["Pride"] += standards[behaviorName];
+    if(behaviorName in standards) {
+        var perception = standards[behaviorName]["Overall"] / standards[behaviorName]["Count"];
+
+        if (agentName === this.name) {
+            if (perception >= 0) {
+                newEmotions.state["Pride"] += perception;
+            }
+            else {
+                newEmotions.state["Shame"] +=  -1 * perception;
+            }
         }
         else {
-            newEmotions.state["Shame"] += -1*standards[behaviorName];
-        }
-    }
-    else {
-        if(standards[behaviorName] >= 0) {
-            newEmotions.state["Admiration"] += standards[behaviorName];
-        }
-        else {
-            newEmotions.state["Reproach"] += -1*standards[behaviorName];
+            if (perception >= 0) {
+                newEmotions.state["Admiration"] += perception;
+            }
+            else {
+                newEmotions.state["Reproach"] +=  -1 * perception;
+            }
         }
     }
 
