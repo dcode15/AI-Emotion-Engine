@@ -20,6 +20,9 @@ Engine.prototype.addEvent = function(name, impacts,  expectation){
         this.events[name]["Expectation"] = expectation;
         this.events[name]["Impacts"] = impacts;
         var desirability = this.eval.eventEval(name, this.events, this.goals);
+        if(isNaN(desirability)) {
+            desirability = 0;
+        }
         this.events[name]["Desirability"] = desirability;
         console.log(this.name);
         console.log(this.events)

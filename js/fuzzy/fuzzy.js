@@ -19,6 +19,11 @@ function FuzzySystem(inputSets, outputSets, rules){
     }
 }
 
+function Singleton(xValue, membership) {
+    this.xValue = xValue;
+    this.membership = membership;
+}
+
 FuzzySystem.prototype.processValue = function(value) {
 
     var fuzzyInputs = this.convertInputToFuzzy(value);
@@ -113,6 +118,44 @@ FuzzySystem.prototype.applyRules = function(fuzzyInputs) {
 }
 
 FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
+    var crispOutputs = {};
+
+    for(var outputNum = 0; outputNum < this.outputSets.length; outputNum++) {
+        var outputName = this.outputSets[outputNum].variableName;
+        var sets = this.outputSets[outputNum].setNames;
+        var singletons = [];
+
+        for (var setNum = 0; setNum < sets.length; setNum++) {
+            var setName = sets[setNum];
+            var membership = fuzzyOutputs[outputName][setName];
+            var xCentroid = (this.outputSets[outputNum].setValues[setNum][0] + this.outputSets[outputNum].setValues[setNum][1] +
+                this.outputSets[outputNum].setValues[setNum][2])/3;
+            var setSingleton = new Singleton(xCentroid, membership);
+            singletons.push(setSingleton)
+        }
+
+        crispOutputs[outputName] = this.defuzzEstimate(singletons);
+    }
+
+    return crispOutputs;
+}
+
+FuzzySystem.prototype.defuzzEstimate = function(singletons) {
+    var totalMembership = 0;
+    var overallCenter = 0;
+    for(var i = 0; i < singletons.length; i++) {
+        totalMembership += singletons[i].membership;
+    }
+
+    for(var i = 0; i < singletons.length; i++) {
+        var proportionalMembership = singletons[i].membership/totalMembership;
+        overallCenter += proportionalMembership*singletons[i].xValue;
+    }
+
+    return overallCenter;
+}
+
+/*FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
 
     var crispOutputs = {};
 
@@ -136,7 +179,6 @@ FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
                     keyPoints.push(peak);
                 }
                 else {
-                    //come back and look at this
                     var angle = Math.atan(1/(peak.x-left.x));
                     var leftPeakX = membership / Math.tan(angle);
                     keyPoints.push(new Point(leftPeakX, membership));
@@ -179,4 +221,4 @@ FuzzySystem.prototype.defuzzEstimate = function(keyPoints) {
     var right = keyPoints[keyPoints.length-1].x-center;
 
     return (center +(1/3)*(right-left));
-}
+}*/

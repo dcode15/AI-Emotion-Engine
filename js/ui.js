@@ -1,3 +1,10 @@
+/*
+ *
+ * GLOBAL VARIABLES
+ *
+ */
+
+
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 var renderer = new THREE.WebGLRenderer({antialias:true});
@@ -8,8 +15,11 @@ var floor = new THREE.Mesh(floorPlane, floorMaterial);
 //Hemisphere lighting used to light all sides of cylinders, prevents strange lighting effects
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 
-var gui = new dat.GUI();
+//Flags whether clicking should create new agent
 var entryMode = false;
+
+//Global gui variables
+var gui = new dat.GUI();
 var goalAddition;
 var agentDropdown;
 var goalField;
@@ -32,8 +42,6 @@ var infoButton;
 var agentsList = {};
 var agentNames = [" "];
 var eventsList = [" "];
-var mouse = {x: 0, y: 0};
-
 var event = {
     name: "",
     impacts: "",
@@ -70,10 +78,15 @@ var agent = {
 var eventTrigger = {
     eventName: " ",
     triggerButton: function() {
-        for(var agentName in agentsList) {
-            agentsList[agentName]["Engine"].triggerEvent(this.eventName);
+        if(!(this.eventName === " ")) {
+            for (var agentName in agentsList) {
+                agentsList[agentName]["Engine"].triggerEvent(this.eventName);
+            }
+            updateColors();
         }
-        updateColors();
+        else {
+            swal("Please choose an event", "", "error");
+        }
     }
 }
 var motivations = {
@@ -90,12 +103,21 @@ var otherTriggers = {
 var information = {
     name: " ",
     informationType: "Emotions",
-    informationButton: function() {swal(this.informationType)}
+    informationButton: function() {outputInfo(this.name, this.informationType)}
 }
 
+
+
+
+
+
+//Initialization
 initGUI();
 initScene();
+//Initiate rendering
 render();
+
+
 
 function initGUI() {
 
@@ -133,9 +155,9 @@ function initGUI() {
 
     infoFolder = gui.addFolder("Info");
     var dataTypes = ["Emotions", "Goals", "Events", "Motivations"];
-    infoName = info.add(information, "name", agentNames).name("Agent Name");
-    infoType = info.add(information, "informationType", dataTypes).name("Info Type");
-    infoButton = info.add(information, "informationButton").name("Show Information");
+    infoName = infoFolder.add(information, "name", agentNames).name("Agent Name");
+    infoType = infoFolder.add(information, "informationType", dataTypes).name("Info Type");
+    infoButton = infoFolder.add(information, "informationButton").name("Show Information");
 }
 
 function initScene() {
@@ -151,7 +173,6 @@ function initScene() {
     //  add the floor to the scene
     floor.position.y = -0.1;
     floor.rotation.x = Math.PI / 2;
-    floor.name = "Floor\nHello";
     scene.add(floor);
 
     //Add hemisphere lighting to scene
@@ -166,6 +187,7 @@ function onClick(event){
 
     if(entryMode === true) {
         //Just a coordinate system conversion
+        var mouse = {x: 0, y: 0};
         mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -235,10 +257,19 @@ function newAgent(name) {
     setMotivation = motivationFolder.add(motivations, "setMotivationButton").name("Set Motivation");
     motivationRule = motivationFolder.add(motivations, "rule").name("Inhibition Rule");
     addMotivationRule = motivationFolder.add(motivations, "addRuleButton").name("Add Rule");
+
+    infoFolder.remove(infoName);
+    infoFolder.remove(infoType);
+    infoFolder.remove(infoButton);
+
+    var dataTypes = ["Emotions", "Goals", "Events", "Motivations"];
+    infoName = infoFolder.add(information, "name", agentNames).name("Agent Name");
+    infoType = infoFolder.add(information, "informationType", dataTypes).name("Info Type");
+    infoButton = infoFolder.add(information, "informationButton").name("Show Information");
 }
 
 function newEvent(name, impacts, expectation) {
-    if(!(name === "" || name in eventsList || impacts === "")) {
+    if(!(name === "" || name in eventsList)) {
         eventsList.push(name);
         triggerFolder.remove(eventsDropdown);
         triggerFolder.remove(trigger);
@@ -317,4 +348,75 @@ function shadeColor(color, percent) {
     B = (B<255)?B:255;
 
     return [R, G, B];
+}
+
+
+
+/*
+ *
+ * INFORMATION OUTPUT FUNCTIONS
+ *
+ */
+function outputInfo(agentName, infoType) {
+    var title = agentName + "'s " + infoType;
+    var message = "";
+
+    switch(infoType) {
+        case "Emotions":
+            message = buildEmotionString(agentName);
+            break;
+        case "Goals":
+            message = buildGoalsString(agentName);
+            break;
+        case "Events":
+            message = buildEventsString(agentName);
+            break;
+        case "Motivations":
+            message = buildMotivationsString(agentName);
+            break;
+        default:
+            swal("An unknown error occurred");
+    }
+
+    swal(title, message);
+}
+
+function buildEmotionString(agentName) {
+    var emotions = agentsList[agentName]["Engine"].emotionalState.state;
+    var message = "";
+
+    for (var emotionName in emotions) {
+        if (emotions.hasOwnProperty(emotionName)) {
+            message += emotionName + ": " + emotions[emotionName].toFixed(2) + "\n";
+        }
+    }
+
+    return message;
+}
+
+function buildGoalsString(agentName) {
+    var goals = agentsList[agentName]["Engine"].goals;
+    var message = "";
+
+    for (var goalName in goals) {
+        if (goals.hasOwnProperty(goalName)) {
+            message += goalName + " (Importance " + goals[goalName].toFixed(2) + ")\n";
+        }
+    }
+
+    return message;
+}
+
+function buildEventsString(agentName) {
+    var events = agentsList[agentName]["Engine"].events;
+    var message = "";
+
+    for (var eventName in events) {
+        if (events.hasOwnProperty(eventName)) {
+            message += eventName.toUpperCase() + "\n\tExpectation: " + events[eventName]["Expectation"].toFixed(2)
+                + "\n\tDesirability: " + events[eventName]["Desirability"].toFixed(2) + "\n\n";
+        }
+    }
+
+    return message;
 }

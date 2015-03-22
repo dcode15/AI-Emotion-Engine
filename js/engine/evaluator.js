@@ -1,10 +1,10 @@
 function Evaluator(goals) {
     var impactVar = new FuzzyVar("Impact", ["HighlyNegative", "SlightlyNegative", "NoImpact", "SlightlyPositive", "HighlyPositive"],
-        [[-1.01,-1,-0.2], [-0.8,-0.4,0], [-0.25,0,0.25], [0,0.4,0.8], [0.2,1,1.01]]);
+        [[-1.8,-1,-0.2], [-0.8,-0.4,0], [-0.25,0,0.25], [0,0.4,0.8], [0.2,1,1.8]]);
     var importanceVar = new FuzzyVar("Importance", ["NotImportant", "SlightlyImportant", "ExtremelyImportant"],
-        [[-0.01,0,0.5], [0.2,0.5,0.8], [0.5,1,1.01]]);
+        [[-0.5,0,0.7], [0.2,0.5,0.8], [0.3,1,1.5]]);
     var desirabilityVar = new FuzzyVar("Desirability", ["HighlyUndesired", "SlightlyUndesired", "Neutral", "SlightlyDesired", "HighlyDesired"],
-        [[-1.01,-1,-0.6], [-0.7,-0.4,-0.1], [-0.3,0,0.3], [0.1,0.4,0.7], [0.6,1,1.01]]);
+        [[-1.4,-1,-0.6], [-0.7,-0.4,-0.1], [-0.3,0,0.3], [0.1,0.4,0.7], [0.6,1,1.4]]);
     var rules = ["Impact HighlyNegative AND Importance NotImportant THEN Desirability Neutral",
         "Impact SlightlyNegative AND Importance NotImportant THEN Desirability Neutral",
         "Impact NoImpact AND Importance NotImportant THEN Desirability Neutral",
@@ -13,8 +13,8 @@ function Evaluator(goals) {
         "Impact HighlyNegative AND Importance SlightlyImportant THEN Desirability SlightlyUndesired",
         "Impact SlightlyNegative AND Importance SlightlyImportant THEN Desirability SlightlyUndesired",
         "Impact NoImpact AND Importance SlightlyImportant THEN Desirability Neutral",
-        "Impact SlightlyPositive AND Importance SlightlyImportant THEN Desirability SlightlyUndesired",
-        "Impact HighlyPositive AND Importance SlightlyImportant THEN Desirability SlightlyUndesired",
+        "Impact SlightlyPositive AND Importance SlightlyImportant THEN Desirability SlightlyDesired",
+        "Impact HighlyPositive AND Importance SlightlyImportant THEN Desirability SlightlyDesired",
         "Impact HighlyNegative AND Importance ExtremelyImportant THEN Desirability HighlyUndesired",
         "Impact SlightlyNegative AND Importance ExtremelyImportant THEN Desirability SlightlyUndesired",
         "Impact NoImpact AND Importance ExtremelyImportant THEN Desirability Neutral",
