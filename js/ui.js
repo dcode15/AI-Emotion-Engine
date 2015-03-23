@@ -47,16 +47,21 @@ var feedbackValue;
 var feedbackTrigger;
 var behaviorActor;
 var behaviorButton;
+var objectFolder;
+var objectAgent;
+var objectName;
+var objectButton;
 
 var agentsList = {};
 var agentNames = [" "];
 var eventsList = [" "];
+var itemsList = [" "];
+var dataTypes = ["Emotions", "Goals", "Events", "Motivations", "Associations"];
 var event = {
     name: "",
     impacts: "",
-    expectation: 0.5,
     addButton: function(){
-        newEvent(this.name,this.impacts,this.expectation);
+        newEvent(this.name,this.impacts);
     }
 };
 var goal = {
@@ -87,25 +92,32 @@ var agent = {
 var eventTrigger = {
     eventName: " ",
     associatedObjects: "",
-    triggerButton: function() {
-        if(!(this.eventName === " ")) {
-            for (var agentName in agentsList) {
-                agentsList[agentName]["Engine"].triggerEvent(this.eventName);
-            }
-            updateColors();
-        }
-        else {
-            swal("Please choose an event", "", "error");
-        }
-    }
+    triggerButton: function() {triggerEvent(this.eventName, this.associatedObjects);}
 }
 var motivations = {
     name: " ",
     motivation: "",
     value: 0,
-    setMotivationButton: function() {},
+    setMotivationButton: function() {
+        if(this.name !== " ") {
+            agentsList[this.name]["Engine"].setMotivation(this.motivation, this.value);
+            var message = this.motivation + " set to " + this.value.toString();
+            swal(message,"","success")
+        }
+        else {
+            swal("Please choose an agent.","","error")
+        }
+    },
     rule: "",
-    addRuleButton: function() {}
+    addRuleButton: function() {
+        if(this.name !== " ") {
+            agentsList[this.name]["Engine"].addFilter(this.rule);
+            swal("Rule Added!","","success");
+        }
+        else {
+            swal("Please choose an agent.","","error")
+        }
+    }
 }
 var otherTriggers = {
     decayButton: function() {
@@ -144,6 +156,16 @@ var feedback = {
         }
     }
 }
+var objects = {
+    agentName: " ",
+    objectName: " ",
+    introduceButton: function() {
+        if(this.agentName !== " " && this.objectName !== " ") {
+            agentsList[this.agentName]["Engine"].introduceObject(this.objectName);
+            updateColors();
+        }
+    }
+}
 
 
 
@@ -168,7 +190,6 @@ function initGUI() {
     var eventAddition = gui.addFolder('Add Event');
     eventAddition.add(event, "name").name("Name");
     eventAddition.add(event, "impacts").name("Goal Impacts");
-    eventAddition.add(event, "expectation").min(0).max(1).step(.01).name("Expectation");
     eventAddition.add(event, "addButton").name("Add Event");
 
     goalAddition = gui.addFolder('Add Goal');
@@ -198,11 +219,15 @@ function initGUI() {
     behaviorActor = feedbackFolder.add(feedback, "actorName", agentNames).name("Behavior Actor");
     behaviorButton = feedbackFolder.add(feedback, "behaviorTrigger").name("Trigger Behavior");
 
+    objectFolder = gui.addFolder("Objects");
+    objectAgent = objectFolder.add(objects, "agentName", agentNames).name("Agent Name");
+    objectName = objectFolder.add(objects, "objectName", itemsList).name("Object Name");
+    objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
+
     var miscellaneous = gui.addFolder("Other Functions");
     miscellaneous.add(otherTriggers, "decayButton").name("Decay");
 
     infoFolder = gui.addFolder("Info");
-    var dataTypes = ["Emotions", "Goals", "Events", "Motivations"];
     infoName = infoFolder.add(information, "name", agentNames).name("Agent Name");
     infoType = infoFolder.add(information, "informationType", dataTypes).name("Info Type");
     infoButton = infoFolder.add(information, "informationButton").name("Show Information");
@@ -310,7 +335,6 @@ function newAgent(name) {
     infoFolder.remove(infoType);
     infoFolder.remove(infoButton);
 
-    var dataTypes = ["Emotions", "Goals", "Events", "Motivations"];
     infoName = infoFolder.add(information, "name", agentNames).name("Agent Name");
     infoType = infoFolder.add(information, "informationType", dataTypes).name("Info Type");
     infoButton = infoFolder.add(information, "informationButton").name("Show Information");
@@ -328,6 +352,14 @@ function newAgent(name) {
     feedbackTrigger = feedbackFolder.add(feedback, "feedbackButton").name("Provide Feedback");
     behaviorActor = feedbackFolder.add(feedback, "actorName", agentNames).name("Behavior Actor");
     behaviorButton = feedbackFolder.add(feedback, "behaviorTrigger").name("Trigger Behavior");
+
+    objectFolder.remove(objectAgent);
+    objectFolder.remove(objectName);
+    objectFolder.remove(objectButton);
+
+    objectAgent = objectFolder.add(objects, "agentName", agentNames).name("Agent Name");
+    objectName = objectFolder.add(objects, "objectName", itemsList).name("Object Name");
+    objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
 }
 
 function newEvent(name, impacts, expectation) {
@@ -439,6 +471,8 @@ function outputInfo(agentName, infoType) {
         case "Motivations":
             message = buildMotivationsString(agentName);
             break;
+        case "Associations":
+            message = buildAssociationsString(agentName);
         default:
             swal("An unknown error occurred");
     }
@@ -484,4 +518,65 @@ function buildEventsString(agentName) {
     }
 
     return message;
+}
+
+function buildAssociationsString(agentName) {
+    var associations = agentsList[agentName]["Engine"].appraiser.associations;
+    var message = "";
+
+    for(var objectName in associations) {
+        message += objectName + "\n";
+        for(var emotionName in associations[objectName]) {
+            var value = associations[objectName][emotionName]["Total"] / associations[objectName][emotionName]["Count"];
+            value = value.toFixed(2);
+            message += emotionName + ": " + value + "\n";
+
+        }
+        message += "\n";
+    }
+    return message;
+}
+
+function buildMotivationsString(agentName) {
+    var motivations = agentsList[agentName]["Engine"].filter.motivations;
+    var message = "STATE:\n";
+
+    for(var motivationName in motivations) {
+        if (motivations.hasOwnProperty(motivationName)) {
+            message += motivationName + ": " + motivations[motivationName].toString() + "\n"
+        }
+    }
+    message += "\nRULES:\n"
+
+    var rules = agentsList[agentName]["Engine"].filter.rules;
+    for(var ruleNum = 0; ruleNum < rules.length; ruleNum++) {
+        var ruleText = rules[ruleNum].toString();
+        ruleText = ruleText.replace(/,/g , " ");
+        message += ruleText + "\n"
+    }
+
+    return message;
+}
+
+function triggerEvent(eventName, objectsString) {
+    if(eventName !== " ") {
+        for (var agentName in agentsList) {
+            var associations = objectsString.replace(/\s+/g, '');
+            associations = associations.split(",");
+            itemsList = pushArray(itemsList, associations);
+            agentsList[agentName]["Engine"].triggerEvent(eventName, associations);
+        }
+        updateColors();
+    }
+    else {
+        swal("Please choose an event", "", "error");
+    }
+
+    objectFolder.remove(objectAgent);
+    objectFolder.remove(objectName);
+    objectFolder.remove(objectButton);
+
+    objectAgent = objectFolder.add(objects, "agentName", agentNames).name("Agent Name");
+    objectName = objectFolder.add(objects, "objectName", itemsList).name("Object Name");
+    objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
 }

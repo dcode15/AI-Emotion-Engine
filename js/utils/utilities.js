@@ -19,3 +19,11 @@ function Point(x, y) {
     this.x = x;
     this.y = y;
 }
+
+function pushArray(arr1, arr2) {
+    for (var i = 0; i < arr2.length; ++i) {
+        arr1.push(arr2[i]);
+    }
+
+    return arr1;
+};

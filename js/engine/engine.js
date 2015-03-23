@@ -14,18 +14,18 @@ function Engine(id, decayConstant){
     this.decayConstant = decayConstant;
 }
 
-Engine.prototype.addEvent = function(name, impacts,  expectation){
+Engine.prototype.addEvent = function(name, impacts){
     if(!(name in this.events)) {
         this.events[name] = {};
-        this.events[name]["Expectation"] = expectation;
+        this.appraiser.updateUserModel(this.events);
+        this.updateExpectations();
+        this.events[name]["Expectation"] = 0.5;
         this.events[name]["Impacts"] = impacts;
         var desirability = this.eval.eventEval(name, this.events, this.goals);
         if(isNaN(desirability)) {
             desirability = 0;
         }
         this.events[name]["Desirability"] = desirability;
-        console.log(this.name);
-        console.log(this.events)
     }
 }
 
@@ -42,9 +42,20 @@ Engine.prototype.addGoal = function(name, importance) {
 }
 
 Engine.prototype.triggerEvent = function(name, objects) {
-    this.emotionalState = this.appraiser.appraiseEvent(name, this.emotionalState, this.events);
+    this.emotionalState = this.appraiser.appraiseEvent(name, this.emotionalState, this.events, objects);
     this.emotionalState = this.filter.applyRules(this.emotionalState);
-    console.log(this.emotionalState);
+    this.updateExpectations();
+}
+
+Engine.prototype.introduceObject = function(objectName) {
+    var associations = this.appraiser.associations;
+
+    for(var emotionName in associations[objectName]) {
+        if(associations[objectName].hasOwnProperty(emotionName)) {
+            var value = associations[objectName][emotionName]["Total"] / associations[objectName][emotionName]["Count"];
+            this.emotionalState.state[emotionName] += value;
+        }
+    }
 }
 
 Engine.prototype.decay = function() {
@@ -55,6 +66,10 @@ Engine.prototype.decay = function() {
 
 Engine.prototype.setMotivation = function(motivation, value) {
     this.filter.setMotivation(motivation, value);
+}
+
+Engine.prototype.changeMotivation = function(motivation, change) {
+    this.filter.changeMotivation(motivation, change);
 }
 
 Engine.prototype.addFilter = function(rule) {
@@ -75,6 +90,14 @@ Engine.prototype.provideFeedback = function(behavior, feedback) {
 
 Engine.prototype.triggerBehavior = function(behavior, agentName) {
     this.emotionalState = this.appraiser.appraiseBehavior(behavior, agentName, this.emotionalState, this.standards);
+}
+
+Engine.prototype.updateExpectations = function() {
+    for(var eventName in this.events) {
+        if(this.events.hasOwnProperty(eventName)) {
+            this.events[eventName]["Expectation"] = this.appraiser.getExpectation(eventName);
+        }
+    }
 }
 
 function Emotions() {

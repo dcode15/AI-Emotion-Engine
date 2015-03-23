@@ -1,21 +1,43 @@
-function Appraiser(name) {this.name = name;}
+function Appraiser(name) {
+    this.name = name;
+    this.associations = {};
+    this.userModel = {};
+    this.memory = [];
+}
 
-Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events) {
+Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events, objects) {
     var newEmotions = oldEmotions;
+    var emotionalChange = {};
+    this.updateMemory(name);
 
     if(events[name]["Desirability"] > 0){
-        newEmotions.state["Joy"] += (1.7*Math.pow(events[name]["Expectation"],0.5)) + (0.7*events[name]["Desirability"]);
+        var joy = (1.7*Math.pow(events[name]["Expectation"],0.5)) + (0.7*events[name]["Desirability"]);
+        emotionalChange["Joy"] = joy;
+        emotionalChange["Sad"] = 0;
+        newEmotions.state["Joy"] += joy;
     }
     if(events[name]["Desirability"] < 0){
-        newEmotions.state["Sad"] += (2*Math.pow(events[name]["Expectation"],2))-events[name]["Desirability"];
+        var sad = (2*Math.pow(events[name]["Expectation"],2))-events[name]["Desirability"]
+        emotionalChange["Sad"] = sad;
+        emotionalChange["Joy"] = 0;
+        newEmotions.state["Sad"] += sad;
     }
 
-    newEmotions.state["Fear"] = this.calculateFear(events);
-    newEmotions.state["Hope"] = this.calculateHope(events);
+
+    emotionalChange["Fear"] = this.calculateFear(events);
+    newEmotions.state["Fear"] = emotionalChange["Fear"];
+    emotionalChange["Hope"] = this.calculateHope(events);
+    newEmotions.state["Hope"] = emotionalChange["Hope"];
     newEmotions.state["Anger"] = Math.min(newEmotions.state["Sad"],newEmotions.state["Reproach"]);
+    emotionalChange["Anger"] = newEmotions.state["Anger"];
     newEmotions.state["Gratitude"] = Math.min(newEmotions.state["Joy"],newEmotions.state["Admiration"]);
+    emotionalChange["Gratitude"] = newEmotions.state["Gratitude"];
     newEmotions.state["Gratification"] = Math.min(newEmotions.state["Joy"],newEmotions.state["Pride"]);
+    emotionalChange["Gratification"] = newEmotions.state["Gratification"];
     newEmotions.state["Remorse"] = Math.min(newEmotions.state["Sad"],newEmotions.state["Shame"]);
+    emotionalChange["Remorse"] = newEmotions.state["Remorse"];
+
+    this.updateAssociations(objects, emotionalChange);
 
     return newEmotions;
 }
@@ -54,7 +76,7 @@ Appraiser.prototype.calculateFear = function(events){
         if (events.hasOwnProperty(eventName)) {
             var fear = 0;
 
-            if(events[eventName]["Desirability"] < 0 && events[eventName]["Expectation"] !== 1) {
+            if(events[eventName]["Desirability"] < 0) {
                 fear = (2*Math.pow(events[eventName]["Expectation"],2))-events[eventName]["Desirability"];
             }
 
@@ -73,7 +95,7 @@ Appraiser.prototype.calculateHope = function(events){
         if (events.hasOwnProperty(eventName)) {
             var hope = 0;
 
-            if(events[eventName]["Desirability"] > 0 && events[eventName]["Expectation"] !== 1) {
+            if(events[eventName]["Desirability"] > 0) {
                 hope = (1.7*Math.pow(events[eventName]["Expectation"],0.5))+(0.7*events[eventName]["Desirability"]);
             }
 
@@ -84,4 +106,109 @@ Appraiser.prototype.calculateHope = function(events){
     }
 
     return maxHope;
+}
+
+Appraiser.prototype.updateAssociations = function(objects, emotionalChange) {
+    for(var objectNum = 0; objectNum < objects.length; objectNum++) {
+        var objectName = objects[objectNum];
+
+        if(!(objectName in this.associations)) {
+
+            this.associations[objectName] = {};
+            for(var emotionName in emotionalChange) {
+                if (emotionalChange.hasOwnProperty(emotionName)) {
+                    this.associations[objectName][emotionName] = {};
+                    this.associations[objectName][emotionName]["Total"] = emotionalChange[emotionName];
+                    this.associations[objectName][emotionName]["Count"] = 1;
+                }
+            }
+        }
+        else {
+            for(var emotionName in emotionalChange) {
+                if (emotionalChange.hasOwnProperty(emotionName)) {
+                    this.associations[objectName][emotionName]["Total"] += emotionalChange[emotionName];
+                    this.associations[objectName][emotionName]["Count"]++;
+                }
+            }
+        }
+    }
+}
+
+Appraiser.prototype.updateMemory = function(eventName) {
+    if(this.memory.length < 2) {
+        this.memory.push(eventName);
+    }
+    else if(this.memory.length === 2) {
+        this.memory.push(eventName);
+        this.userModel[this.memory[0]][this.memory[1]][this.memory[2]]++;
+    }
+    else {
+        this.memory[0] = this.memory[1];
+        this.memory[1] = this.memory[2];
+        this.memory[2] = eventName;
+
+        this.userModel[this.memory[0]][this.memory[1]][this.memory[2]]++;
+    }
+}
+
+Appraiser.prototype.updateUserModel = function(eventsList) {
+
+    for(var eventOne in eventsList) {
+        if(eventsList.hasOwnProperty(eventOne)) {
+            for(var eventTwo in eventsList) {
+                if(eventsList.hasOwnProperty(eventTwo)) {
+                    for(var eventThree in eventsList) {
+                        if(eventsList.hasOwnProperty(eventThree)) {
+
+                            if(eventOne in this.userModel) {
+                                if(eventTwo in this.userModel[eventOne]) {
+                                    if(!(eventThree in this.userModel[eventOne][eventTwo])) {
+                                        this.userModel[eventOne][eventTwo][eventThree] = 0;
+                                    }
+                                }
+                                else {
+                                    this.userModel[eventOne][eventTwo] = {};
+                                    this.userModel[eventOne][eventTwo][eventThree] = 0;
+                                }
+                            }
+                            else {
+                                this.userModel[eventOne] = {};
+                                this.userModel[eventOne][eventTwo] = {};
+                                this.userModel[eventOne][eventTwo][eventThree] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Appraiser.prototype.getExpectation = function(eventName) {
+    if(this.memory.length === 3) {
+        var lastEvent = this.memory[2];
+        var secondLastEvent = this.memory[1];
+        var expectation;
+
+        if (this.userModel[secondLastEvent][lastEvent][eventName] !== 0) {
+            var total = 0;
+
+            for (var event in this.userModel[secondLastEvent][lastEvent]) {
+                if (this.userModel[secondLastEvent][lastEvent].hasOwnProperty(event)) {
+                    if (this.userModel[secondLastEvent][lastEvent][event] !== 0) {
+                        total += this.userModel[secondLastEvent][lastEvent][event];
+                    }
+                }
+            }
+            expectation = this.userModel[secondLastEvent][lastEvent][eventName] / total;
+        }
+        else {
+            expectation = 0.3;
+        }
+    }
+    else {
+        expectation = 0.3;
+    }
+
+    return expectation;
 }
