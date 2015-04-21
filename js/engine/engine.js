@@ -19,7 +19,7 @@ Engine.prototype.addEvent = function(name, impacts){
         this.events[name] = {};
         this.appraiser.updateUserModel(this.events);
         this.updateExpectations();
-        this.events[name]["Expectation"] = 0.5;
+        this.events[name]["Expectation"] = 0.3;
         this.events[name]["Impacts"] = impacts;
         var desirability = this.eval.eventEval(name, this.events, this.goals);
         if(isNaN(desirability)) {

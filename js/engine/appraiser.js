@@ -12,15 +12,16 @@ Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events, objects)
 
     if(events[name]["Desirability"] > 0){
         var joy = (1.7*Math.pow(events[name]["Expectation"],0.5)) + (0.7*events[name]["Desirability"]);
+        console.log(joy);
         emotionalChange["Joy"] = joy;
         emotionalChange["Sad"] = 0;
-        newEmotions.state["Joy"] += joy;
+        newEmotions.state["Joy"] += (3-newEmotions.state["Joy"])*(joy/3);
     }
     if(events[name]["Desirability"] < 0){
         var sad = (2*Math.pow(events[name]["Expectation"],2))-events[name]["Desirability"]
         emotionalChange["Sad"] = sad;
         emotionalChange["Joy"] = 0;
-        newEmotions.state["Sad"] += sad;
+        newEmotions.state["Sad"] += (3-newEmotions.state["Sad"])*(sad/3);
     }
 
 
@@ -50,18 +51,18 @@ Appraiser.prototype.appraiseBehavior = function(behaviorName, agentName, oldEmot
 
         if (agentName === this.name) {
             if (perception >= 0) {
-                newEmotions.state["Pride"] += perception;
+                newEmotions.state["Pride"] += (3-newEmotions.state["Pride"])*(perception/3);
             }
             else {
-                newEmotions.state["Shame"] +=  -1 * perception;
+                newEmotions.state["Shame"] +=  (3-newEmotions.state["Shame"])*((-1*perception)/3);
             }
         }
         else {
             if (perception >= 0) {
-                newEmotions.state["Admiration"] += perception;
+                newEmotions.state["Admiration"] += (3-newEmotions.state["Admiration"])*(perception/3);
             }
             else {
-                newEmotions.state["Reproach"] +=  -1 * perception;
+                newEmotions.state["Reproach"] +=  (3-newEmotions.state["Reproach"])*((-1*perception)/3);
             }
         }
     }
@@ -77,7 +78,7 @@ Appraiser.prototype.calculateFear = function(events){
             var fear = 0;
 
             if(events[eventName]["Desirability"] < 0) {
-                fear = (2*Math.pow(events[eventName]["Expectation"],2))-events[eventName]["Desirability"];
+                fear = (1.85*Math.pow(events[eventName]["Expectation"],2))-events[eventName]["Desirability"];
             }
 
             if(fear > maxFear){
@@ -96,7 +97,7 @@ Appraiser.prototype.calculateHope = function(events){
             var hope = 0;
 
             if(events[eventName]["Desirability"] > 0) {
-                hope = (1.7*Math.pow(events[eventName]["Expectation"],0.5))+(0.7*events[eventName]["Desirability"]);
+                hope = (1.55*Math.pow(events[eventName]["Expectation"],0.5))+(0.7*events[eventName]["Desirability"]);
             }
 
             if(hope > maxHope){

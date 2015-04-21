@@ -70,6 +70,7 @@ var goal = {
     importance: 0.5,
     addButton: function() {
         if (this.agentName !== " ") {
+            console.log("addGoal(this.goalName, this.importance");
             agentsList[this.agentName]["Engine"].addGoal(this.goalName, this.importance);
             swal("Goal Added!","","success");
         }
@@ -100,6 +101,7 @@ var motivations = {
     value: 0,
     setMotivationButton: function() {
         if(this.name !== " ") {
+            console.log("setMotivation(this.motivation, this.value");
             agentsList[this.name]["Engine"].setMotivation(this.motivation, this.value);
             var message = this.motivation + " set to " + this.value.toString();
             swal(message,"","success")
@@ -111,6 +113,7 @@ var motivations = {
     rule: "",
     addRuleButton: function() {
         if(this.name !== " ") {
+            console.log("addFilter(this.rule)");
             agentsList[this.name]["Engine"].addFilter(this.rule);
             swal("Rule Added!","","success");
         }
@@ -122,6 +125,7 @@ var motivations = {
 var otherTriggers = {
     decayButton: function() {
         for (var agentName in agentsList) {
+            console.log("decay()")
             agentsList[agentName]["Engine"].decay();
         }
         updateColors();
@@ -138,6 +142,7 @@ var feedback = {
     value: 0.5,
     feedbackButton: function() {
         if(!(this.name === " " || this.behavior === "")) {
+            console.log("provideFeedback(this.behavior, this.value)");
             agentsList[this.name]["Engine"].provideFeedback(this.behavior, this.value);
             swal("Feedback provided!", "", "success");
         }
@@ -148,6 +153,7 @@ var feedback = {
     actorName: " ",
     behaviorTrigger: function() {
         if(!(this.actorName === " " || this.behavior === "")) {
+            console.log("triggerBehavior(this.behavior, this.actorName)");
             agentsList[this.name]["Engine"].triggerBehavior(this.behavior, this.actorName);
             updateColors();
         }
@@ -161,6 +167,7 @@ var objects = {
     objectName: " ",
     introduceButton: function() {
         if(this.agentName !== " " && this.objectName !== " ") {
+            console.log("introduceObject(this.objectName)");
             agentsList[this.agentName]["Engine"].introduceObject(this.objectName);
             updateColors();
         }
@@ -274,12 +281,13 @@ function onClick(event){
         var location = intersect[0].point;
 
         var geometry = new THREE.CylinderGeometry(1, 1, 4, 40);
-        var material = new THREE.MeshLambertMaterial({color: 0xa8a8a8});
+        var material = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
         var newCylinder = new THREE.Mesh(geometry, material);
 
         //Place cylinder at the location where the ray intersected  the floor
         newCylinder.position.set(location.x, 0, location.z);
         agentsList[agent.name] = {};
+        console.log("new Engine(agent.name, 0.4)");
         agentsList[agent.name]["Engine"] = new Engine(agent.name, 0.4);
         agentsList[agent.name]["Model"] = newCylinder;
         agentsList[agent.name]["Model"].name = agent.name;
@@ -362,7 +370,7 @@ function newAgent(name) {
     objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
 }
 
-function newEvent(name, impacts, expectation) {
+function newEvent(name, impacts) {
     if(!(name === "" || name in eventsList)) {
         eventsList.push(name);
         triggerFolder.remove(eventsDropdown);
@@ -376,7 +384,7 @@ function newEvent(name, impacts, expectation) {
         impacts = impacts.replace(/\s+/g, '');
         impacts = impacts.split(",");
         for(var agentName in agentsList) {
-            agentsList[agentName]["Engine"].addEvent(name, impacts, expectation);
+            agentsList[agentName]["Engine"].addEvent(name, impacts);
         }
         swal("Event Added!","","success");
     }
@@ -564,6 +572,7 @@ function triggerEvent(eventName, objectsString) {
             var associations = objectsString.replace(/\s+/g, '');
             associations = associations.split(",");
             itemsList = pushArray(itemsList, associations);
+            console.log("triggerEvent(eventName, associations)");
             agentsList[agentName]["Engine"].triggerEvent(eventName, associations);
         }
         updateColors();
