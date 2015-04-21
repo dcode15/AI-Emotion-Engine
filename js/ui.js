@@ -70,7 +70,7 @@ var goal = {
     importance: 0.5,
     addButton: function() {
         if (this.agentName !== " ") {
-            console.log("addGoal(this.goalName, this.importance");
+            console.log(this.agentName + ".addGoal(\"" + this.goalName + "\", " + this.importance + ");");
             agentsList[this.agentName]["Engine"].addGoal(this.goalName, this.importance);
             swal("Goal Added!","","success");
         }
@@ -101,7 +101,7 @@ var motivations = {
     value: 0,
     setMotivationButton: function() {
         if(this.name !== " ") {
-            console.log("setMotivation(this.motivation, this.value");
+            console.log(this.name + ".setMotivation(\"" + this.motivation + "\", " + this.value + ");");
             agentsList[this.name]["Engine"].setMotivation(this.motivation, this.value);
             var message = this.motivation + " set to " + this.value.toString();
             swal(message,"","success")
@@ -113,7 +113,7 @@ var motivations = {
     rule: "",
     addRuleButton: function() {
         if(this.name !== " ") {
-            console.log("addFilter(this.rule)");
+            console.log(this.name + ".addFilter(\"" + this.rule + "\");");
             agentsList[this.name]["Engine"].addFilter(this.rule);
             swal("Rule Added!","","success");
         }
@@ -125,7 +125,7 @@ var motivations = {
 var otherTriggers = {
     decayButton: function() {
         for (var agentName in agentsList) {
-            console.log("decay()")
+            console.log(agentName + ".decay()");
             agentsList[agentName]["Engine"].decay();
         }
         updateColors();
@@ -142,7 +142,7 @@ var feedback = {
     value: 0.5,
     feedbackButton: function() {
         if(!(this.name === " " || this.behavior === "")) {
-            console.log("provideFeedback(this.behavior, this.value)");
+            console.log(this.name + ".provideFeedback(\"" + this.behavior + "\", " + this.value + ");");
             agentsList[this.name]["Engine"].provideFeedback(this.behavior, this.value);
             swal("Feedback provided!", "", "success");
         }
@@ -153,7 +153,7 @@ var feedback = {
     actorName: " ",
     behaviorTrigger: function() {
         if(!(this.actorName === " " || this.behavior === "")) {
-            console.log("triggerBehavior(this.behavior, this.actorName)");
+            console.log(this.name + ".triggerBehavior(\"" + this.behavior + "\", \"" + this.actorName + "\");");
             agentsList[this.name]["Engine"].triggerBehavior(this.behavior, this.actorName);
             updateColors();
         }
@@ -167,7 +167,7 @@ var objects = {
     objectName: " ",
     introduceButton: function() {
         if(this.agentName !== " " && this.objectName !== " ") {
-            console.log("introduceObject(this.objectName)");
+            console.log(this.agentName + ".introduceObject(\"" + this.objectName + "\");");
             agentsList[this.agentName]["Engine"].introduceObject(this.objectName);
             updateColors();
         }
@@ -287,7 +287,7 @@ function onClick(event){
         //Place cylinder at the location where the ray intersected  the floor
         newCylinder.position.set(location.x, 0, location.z);
         agentsList[agent.name] = {};
-        console.log("new Engine(agent.name, 0.4)");
+        console.log("new Engine(\"" + agent.name + "\", 0.4);");
         agentsList[agent.name]["Engine"] = new Engine(agent.name, 0.4);
         agentsList[agent.name]["Model"] = newCylinder;
         agentsList[agent.name]["Model"].name = agent.name;
@@ -384,6 +384,7 @@ function newEvent(name, impacts) {
         impacts = impacts.replace(/\s+/g, '');
         impacts = impacts.split(",");
         for(var agentName in agentsList) {
+            console.log(agentName + ".addEvent(\"" + name + "\", [" + impacts + "]);")
             agentsList[agentName]["Engine"].addEvent(name, impacts);
         }
         swal("Event Added!","","success");
@@ -404,6 +405,7 @@ function newEvent(name, impacts) {
  */
 function updateColors() {
     for(var agentName in agentsList) {
+        console.log(agentName + ".getState(); (For color updating)");
         var color = calculateColor(agentsList[agentName]["Engine"].emotionalState);
         agentsList[agentName]["Model"].material.color.set(color);
     }
@@ -489,6 +491,7 @@ function outputInfo(agentName, infoType) {
 }
 
 function buildEmotionString(agentName) {
+    console.log(agentName + ".getState(); (For popup display)");
     var emotions = agentsList[agentName]["Engine"].emotionalState.state;
     var message = "";
 
@@ -502,6 +505,7 @@ function buildEmotionString(agentName) {
 }
 
 function buildGoalsString(agentName) {
+    console.log(agentName + ".getGoals(); (For popup display)");
     var goals = agentsList[agentName]["Engine"].goals;
     var message = "";
 
@@ -515,6 +519,7 @@ function buildGoalsString(agentName) {
 }
 
 function buildEventsString(agentName) {
+    console.log(agentName + ".getEvents(); (For popup display)");
     var events = agentsList[agentName]["Engine"].events;
     var message = "";
 
@@ -529,23 +534,26 @@ function buildEventsString(agentName) {
 }
 
 function buildAssociationsString(agentName) {
+    console.log(agentName + ".getAssociations(); (For popup display)");
     var associations = agentsList[agentName]["Engine"].appraiser.associations;
     var message = "";
 
     for(var objectName in associations) {
         message += objectName + "\n";
+        if(!(objectName === "")) {
         for(var emotionName in associations[objectName]) {
             var value = associations[objectName][emotionName]["Total"] / associations[objectName][emotionName]["Count"];
             value = value.toFixed(2);
             message += emotionName + ": " + value + "\n";
 
-        }
+        }}
         message += "\n";
     }
     return message;
 }
 
 function buildMotivationsString(agentName) {
+    console.log(agentName + ".getMotivations(); (For popup display)");
     var motivations = agentsList[agentName]["Engine"].filter.motivations;
     var message = "STATE:\n";
 
@@ -556,6 +564,7 @@ function buildMotivationsString(agentName) {
     }
     message += "\nRULES:\n"
 
+    console.log(agentName + ".getRules(); (For popup display)");
     var rules = agentsList[agentName]["Engine"].filter.rules;
     for(var ruleNum = 0; ruleNum < rules.length; ruleNum++) {
         var ruleText = rules[ruleNum].toString();
@@ -572,7 +581,7 @@ function triggerEvent(eventName, objectsString) {
             var associations = objectsString.replace(/\s+/g, '');
             associations = associations.split(",");
             itemsList = pushArray(itemsList, associations);
-            console.log("triggerEvent(eventName, associations)");
+            console.log(agentName + ".triggerEvent(\"" + eventName + "\", [" + associations + "]);");
             agentsList[agentName]["Engine"].triggerEvent(eventName, associations);
         }
         updateColors();

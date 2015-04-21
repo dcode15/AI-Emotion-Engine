@@ -12,7 +12,6 @@ Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events, objects)
 
     if(events[name]["Desirability"] > 0){
         var joy = (1.7*Math.pow(events[name]["Expectation"],0.5)) + (0.7*events[name]["Desirability"]);
-        console.log(joy);
         emotionalChange["Joy"] = joy;
         emotionalChange["Sad"] = 0;
         newEmotions.state["Joy"] += (3-newEmotions.state["Joy"])*(joy/3);
