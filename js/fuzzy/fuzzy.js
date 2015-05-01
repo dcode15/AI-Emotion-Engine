@@ -1,6 +1,8 @@
-/**
- * Created by Douglas on 2/18/2015.
- */
+
+//Constructor for FuzzyVar class
+//variableName is the name of the fuzzy variable (string)
+//setNames is a list of variable sets (strings)
+//setValues is a list of three-element lists containing the left, middle, and right points of each set on the x axis
 function FuzzyVar(variableName, setNames, setValues) {
 
     this.variableName = variableName;
@@ -8,6 +10,11 @@ function FuzzyVar(variableName, setNames, setValues) {
     this.setValues = setValues;
 }
 
+
+//Constructor for FuzzySystem class
+//inputSets is a list of FuzzyVar objects
+//outputSets is a list of FuzzyVar objects
+//rules is a list of logical inference rules (strings)
 function FuzzySystem(inputSets, outputSets, rules){
 
     this.inputSets = inputSets;
@@ -19,11 +26,18 @@ function FuzzySystem(inputSets, outputSets, rules){
     }
 }
 
+
+//Singleton class constructor
+//xValue is a decimal location of the singleton on the x-axis
+//membership is the degree of membership of the singleton (y-axis height)
 function Singleton(xValue, membership) {
     this.xValue = xValue;
     this.membership = membership;
 }
 
+
+//Process a crisp input into a crisp output
+//value is the crisp input for the fuzzy system
 FuzzySystem.prototype.processValue = function(value) {
 
     var fuzzyInputs = this.convertInputToFuzzy(value);
@@ -32,6 +46,10 @@ FuzzySystem.prototype.processValue = function(value) {
     return crispOutputs;
 };
 
+
+//converts crisp input to fuzzy set memberships
+//value is the crisp input
+//returns a dictionary of fuzzy input variables and memberships
 FuzzySystem.prototype.convertInputToFuzzy = function(value) {
 
     var fuzzyInputs = {};
@@ -63,6 +81,10 @@ FuzzySystem.prototype.convertInputToFuzzy = function(value) {
     return fuzzyInputs;
 };
 
+
+//Applies fuzzy logic inference rules to fuzzy inputs
+//fuzzyInputs is a dictionary of fuzzy variables and memberships
+//returns a dictionary of fuzzy output variables and memberships
 FuzzySystem.prototype.applyRules = function(fuzzyInputs) {
 
     var fuzzyOutputs = {};
@@ -117,6 +139,10 @@ FuzzySystem.prototype.applyRules = function(fuzzyInputs) {
     return fuzzyOutputs;
 }
 
+
+//Defuzzifies fuzzy outputs to a crisp value
+//fuzzyOutputs is a dictionary of fuzzy output variables and memberships
+//returns a decimal crisp output
 FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
     var crispOutputs = {};
 
@@ -140,6 +166,10 @@ FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
     return crispOutputs;
 }
 
+
+//Performs a centroid estimations for defuzzifications
+//singletons is a list of Singleton objects
+//returns a decimal center for the singletons
 FuzzySystem.prototype.defuzzEstimate = function(singletons) {
     var totalMembership = 0;
     var overallCenter = 0;
@@ -155,6 +185,9 @@ FuzzySystem.prototype.defuzzEstimate = function(singletons) {
     return overallCenter;
 }
 
+
+//Alternate centroid estimation method
+//Was less accurate in testing
 /*FuzzySystem.prototype.defuzzify = function(fuzzyOutputs) {
 
     var crispOutputs = {};

@@ -1,4 +1,7 @@
-function Evaluator(goals) {
+
+//Constructor for Evaluator class
+//Fuzzy logic sets and rules for event evaluation are defined here
+function Evaluator() {
     var impactVar = new FuzzyVar("Impact", ["HighlyNegative", "SlightlyNegative", "NoImpact", "SlightlyPositive", "HighlyPositive"],
         [[-1.8,-1,-0.2], [-0.8,-0.4,0], [-0.25,0,0.25], [0,0.4,0.8], [0.2,1,1.8]]);
     var importanceVar = new FuzzyVar("Importance", ["NotImportant", "SlightlyImportant", "ExtremelyImportant"],
@@ -24,6 +27,12 @@ function Evaluator(goals) {
     this.fuzzy = new FuzzySystem([impactVar, importanceVar],[desirabilityVar], rules);
 }
 
+
+//Evaluates desirability of an event
+//name is the name of the event (string)
+//events is a dictionary of all events known by the agent
+//goals is a dictionary of all of the agent's goals
+//returns a decimal between 0 and 1 representing event desirability
 Evaluator.prototype.eventEval = function(name, events, goals) {
     var totalDesirability = 0;
     var affectedGoals = 0;

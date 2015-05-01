@@ -1,3 +1,6 @@
+
+//Constructor for Appraiser class
+//name is the name of the individual (string)
 function Appraiser(name) {
     this.name = name;
     this.associations = {};
@@ -5,6 +8,13 @@ function Appraiser(name) {
     this.memory = [];
 }
 
+
+//Updates emotional state based on triggered event
+//name is the name of the event (string)
+//oldEmotions is an Emotions object representing emotional state prior to event
+//events is the dictionary of events the agent understands
+//objects is a list of associated objects (strings)
+//returns updated Emotions object
 Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events, objects) {
     var newEmotions = oldEmotions;
     var emotionalChange = {};
@@ -16,11 +26,15 @@ Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events, objects)
         emotionalChange["Sad"] = 0;
         newEmotions.state["Joy"] += (3-newEmotions.state["Joy"])*(joy/3);
     }
-    if(events[name]["Desirability"] < 0){
+    else if(events[name]["Desirability"] < 0){
         var sad = (2*Math.pow(events[name]["Expectation"],2))-events[name]["Desirability"]
         emotionalChange["Sad"] = sad;
         emotionalChange["Joy"] = 0;
         newEmotions.state["Sad"] += (3-newEmotions.state["Sad"])*(sad/3);
+    }
+    else if(events[name]["Desirability"] === 0) {
+        emotionalChange["Sad"] = 0;
+        emotionalChange["Joy"] = 0;
     }
 
 
@@ -42,6 +56,13 @@ Appraiser.prototype.appraiseEvent = function(name, oldEmotions, events, objects)
     return newEmotions;
 }
 
+
+//Updates social emotions in response to a behavior
+//behaviorName is the name of the behavior (string)
+//agentName is the name of the agent (string)
+//oldEmotions is an Emotions object representing emotional state prior to behavior
+//standards is a dictionary of learned social standards for behaviors
+//returns updated emotions object
 Appraiser.prototype.appraiseBehavior = function(behaviorName, agentName, oldEmotions, standards) {
     var newEmotions = oldEmotions;
 
@@ -70,6 +91,9 @@ Appraiser.prototype.appraiseBehavior = function(behaviorName, agentName, oldEmot
 }
 
 
+//Calculates the maximum fear response of all known events
+//events is the dictionary of events the agent understands
+//returns a decimal intensity value
 Appraiser.prototype.calculateFear = function(events){
     var maxFear = 0;
     for (var eventName in events) {
@@ -89,6 +113,10 @@ Appraiser.prototype.calculateFear = function(events){
     return maxFear;
 }
 
+
+//Calculates the maximum hope response of all known events
+//events is the dictionary of events the agent understands
+//returns a decimal intensity value
 Appraiser.prototype.calculateHope = function(events){
     var maxHope = 0;
     for (var eventName in events) {
@@ -108,6 +136,10 @@ Appraiser.prototype.calculateHope = function(events){
     return maxHope;
 }
 
+
+//Updates object associations in response to new event
+//objects is a list of object names (strings)
+//emotionalChange is the emotional result of the associated event
 Appraiser.prototype.updateAssociations = function(objects, emotionalChange) {
     for(var objectNum = 0; objectNum < objects.length; objectNum++) {
         var objectName = objects[objectNum];
@@ -126,14 +158,24 @@ Appraiser.prototype.updateAssociations = function(objects, emotionalChange) {
         else {
             for(var emotionName in emotionalChange) {
                 if (emotionalChange.hasOwnProperty(emotionName)) {
-                    this.associations[objectName][emotionName]["Total"] += emotionalChange[emotionName];
-                    this.associations[objectName][emotionName]["Count"]++;
+                    if(this.associations[objectName].hasOwnProperty(emotionName)) {
+                        this.associations[objectName][emotionName]["Total"] += emotionalChange[emotionName];
+                        this.associations[objectName][emotionName]["Count"]++;
+                    }
+                    else {
+                        this.associations[objectName][emotionName] = {};
+                        this.associations[objectName][emotionName]["Total"] = emotionalChange[emotionName];
+                        this.associations[objectName][emotionName]["Count"] = 1;
+                    }
                 }
             }
         }
     }
 }
 
+
+//Updates count of three-event sequences in agent's memory
+//eventName is the name of the triggered event (string)
 Appraiser.prototype.updateMemory = function(eventName) {
     if(this.memory.length < 2) {
         this.memory.push(eventName);
@@ -151,6 +193,9 @@ Appraiser.prototype.updateMemory = function(eventName) {
     }
 }
 
+
+//Recalculates expectations in response to new experience
+//eventsList is the dictionary of events the agent understands
 Appraiser.prototype.updateUserModel = function(eventsList) {
 
     for(var eventOne in eventsList) {
@@ -184,6 +229,10 @@ Appraiser.prototype.updateUserModel = function(eventsList) {
     }
 }
 
+
+//Gets the expectation for a particular event
+//eventName is the name of the event (string)
+//returns a decimal expectation between 0 and 1
 Appraiser.prototype.getExpectation = function(eventName) {
     if(this.memory.length === 3) {
         var lastEvent = this.memory[2];

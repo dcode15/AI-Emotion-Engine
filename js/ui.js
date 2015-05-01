@@ -1,24 +1,18 @@
-/*
- *
- * GLOBAL VARIABLES
- *
- */
 
 
+//Variables for WebGL
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 var renderer = new THREE.WebGLRenderer({antialias:true});
-//Create a plane to act as a "floor" that will let the clicked location be determined in the onClick() function
 var floorPlane = new THREE.PlaneGeometry(1000,1000,1,1);
 var floorMaterial = new THREE.MeshLambertMaterial({color: 0x000000, side: THREE.DoubleSide});
 var floor = new THREE.Mesh(floorPlane, floorMaterial);
-//Hemisphere lighting used to light all sides of cylinders, prevents strange lighting effects
 var mainLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
 
 //Flags whether clicking should create new agent
 var entryMode = false;
 
-//Global gui variables
+//Global dat.gui variables
 var gui = new dat.GUI();
 var goalAddition;
 var agentDropdown;
@@ -51,12 +45,15 @@ var objectFolder;
 var objectAgent;
 var objectName;
 var objectButton;
-
 var agentsList = {};
 var agentNames = [" "];
 var eventsList = [" "];
 var itemsList = [" "];
 var dataTypes = ["Emotions", "Goals", "Events", "Motivations", "Associations"];
+
+
+
+//Objects for dat.gui components
 var event = {
     name: "",
     impacts: "",
@@ -109,6 +106,8 @@ var motivations = {
         else {
             swal("Please choose an agent.","","error")
         }
+
+        updateColors()
     },
     rule: "",
     addRuleButton: function() {
@@ -120,6 +119,8 @@ var motivations = {
         else {
             swal("Please choose an agent.","","error")
         }
+
+        updateColors()
     }
 }
 var otherTriggers = {
@@ -182,34 +183,37 @@ var objects = {
 //Initialization
 initGUI();
 initScene();
-//Initiate rendering
 render();
 
 
-
+//Initializes all dat.gui components
 function initGUI() {
 
-    //Set up GUI controls
+    //Agent addition menu
     var agentAddition = gui.addFolder("Add Agent");
     agentAddition.add(agent, "name").name("Name");
     agentAddition.add(agent, "addButton").name("Add Agent");
 
+    //Event addition menu
     var eventAddition = gui.addFolder('Add Event');
     eventAddition.add(event, "name").name("Name");
     eventAddition.add(event, "impacts").name("Goal Impacts");
     eventAddition.add(event, "addButton").name("Add Event");
 
+    //Goal addition menu
     goalAddition = gui.addFolder('Add Goal');
     agentDropdown = goalAddition.add(goal, "agentName", agentNames).name("Agent Name");
     goalField = goalAddition.add(goal, "goalName").name("Goal Name");
     importanceSlider = goalAddition.add(goal, "importance").min(0).max(1).step(.01).name("Importance");
     addGoalButton = goalAddition.add(goal, "addButton").name("Add Goal");
 
+    //Event triggering menu
     triggerFolder = gui.addFolder("Trigger Events");
     eventsDropdown = triggerFolder.add(eventTrigger, "eventName", eventsList).name("Event");
     eventObjects = triggerFolder.add(eventTrigger, "associatedObjects").name("Associated Items");
     trigger = triggerFolder.add(eventTrigger, "triggerButton").name("Trigger Event");
 
+    //Motivations menu
     motivationFolder = gui.addFolder('Motivations');
     motivationAgent = motivationFolder.add(motivations, "name", agentNames).name("Agent Name");
     motivationName = motivationFolder.add(motivations, "motivation").name("Motivation Name");
@@ -218,6 +222,7 @@ function initGUI() {
     motivationRule = motivationFolder.add(motivations, "rule").name("Inhibition Rule");
     addMotivationRule = motivationFolder.add(motivations, "addRuleButton").name("Add Rule");
 
+    //Social feedback menu
     feedbackFolder = gui.addFolder("Standards");
     feedbackName = feedbackFolder.add(feedback, "name", agentNames).name("Agent Name");
     feedbackBehavior = feedbackFolder.add(feedback, "behavior").name("Behavior");
@@ -226,20 +231,25 @@ function initGUI() {
     behaviorActor = feedbackFolder.add(feedback, "actorName", agentNames).name("Behavior Actor");
     behaviorButton = feedbackFolder.add(feedback, "behaviorTrigger").name("Trigger Behavior");
 
+    //Object introduction menu
     objectFolder = gui.addFolder("Objects");
     objectAgent = objectFolder.add(objects, "agentName", agentNames).name("Agent Name");
     objectName = objectFolder.add(objects, "objectName", itemsList).name("Object Name");
     objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
 
+    //Decay menu
     var miscellaneous = gui.addFolder("Other Functions");
     miscellaneous.add(otherTriggers, "decayButton").name("Decay");
 
+    //Info menu
     infoFolder = gui.addFolder("Info");
     infoName = infoFolder.add(information, "name", agentNames).name("Agent Name");
     infoType = infoFolder.add(information, "informationType", dataTypes).name("Info Type");
     infoButton = infoFolder.add(information, "informationButton").name("Show Information");
 }
 
+
+//Initializes WebGL scene
 function initScene() {
     //Set camera location and orient towards origin
     camera.position.set(0,40,0);
@@ -263,6 +273,8 @@ function initScene() {
     window.addEventListener( 'resize', onWindowResize, false );
 }
 
+
+//Finds location of click and places new agent at that location
 function onClick(event){
 
     if(entryMode === true) {
@@ -297,6 +309,7 @@ function onClick(event){
 }
 
 
+//Dynamic sizing when window is resized
 function onWindowResize(){
 
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -304,13 +317,18 @@ function onWindowResize(){
 
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
-      
+
+
+//Render loop
 function render() {
 
 	requestAnimationFrame(render);
 	renderer.render(scene, camera);
 };
 
+
+//New agent addition
+//Code updates menus to reflect new agent (dynamic dropdowns)
 function newAgent(name) {
     entryMode = true;
     agentNames.push(name);
@@ -370,6 +388,8 @@ function newAgent(name) {
     objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
 }
 
+
+//Menu updating for new events
 function newEvent(name, impacts) {
     if(!(name === "" || name in eventsList)) {
         eventsList.push(name);
@@ -395,6 +415,30 @@ function newEvent(name, impacts) {
 }
 
 
+//Updates gui and associations on event trigger
+function triggerEvent(eventName, objectsString) {
+    if(eventName !== " ") {
+        for (var agentName in agentsList) {
+            var associations = objectsString.replace(/\s+/g, '');
+            associations = associations.split(",");
+            itemsList = pushArray(itemsList, associations);
+            console.log(agentName + ".triggerEvent(\"" + eventName + "\", [" + associations + "]);");
+            agentsList[agentName]["Engine"].triggerEvent(eventName, associations);
+        }
+        updateColors();
+    }
+    else {
+        swal("Please choose an event", "", "error");
+    }
+
+    objectFolder.remove(objectAgent);
+    objectFolder.remove(objectName);
+    objectFolder.remove(objectButton);
+
+    objectAgent = objectFolder.add(objects, "agentName", agentNames).name("Agent Name");
+    objectName = objectFolder.add(objects, "objectName", itemsList).name("Object Name");
+    objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
+}
 
 
 
@@ -403,14 +447,17 @@ function newEvent(name, impacts) {
  * COLOR DETERMINATION FUNCTIONS
  *
  */
+
+//Updates color of all agents on map
 function updateColors() {
     for(var agentName in agentsList) {
         console.log(agentName + ".getState(); (For color updating)");
-        var color = calculateColor(agentsList[agentName]["Engine"].emotionalState);
+        var color = calculateColor(agentsList[agentName]["Engine"].getEmotions());
         agentsList[agentName]["Model"].material.color.set(color);
     }
 }
 
+//Calculates a color that is the average of all emotional colors felt, intensity alters brightness
 function calculateColor(emotions) {
     var totalR = 0;
     var totalG = 0;
@@ -419,10 +466,10 @@ function calculateColor(emotions) {
     var colors = {"Joy":"#8f7700","Sad":"#05008f","Disappointment":"#00458F","Relief":"#8F008C","Hope":"#8F002B","Fear":"#5A8F00","Pride":"#8F3E00",
         "Shame":"#008f6b","Reproach":"#8F2D00","Admiration":"#58008F","Anger":"#8F0000", "Gratitude":"#00648F","Gratification":"#078F00","Remorse":"#4A008F"};
 
-    for(var emotion in emotions.state) {
-        if(emotions.state[emotion] > 0) {
+    for(var emotion in emotions) {
+        if(emotions[emotion] > 0) {
             var color = colors[emotion];
-            color = shadeColor(color, emotions.state[emotion]*30);
+            color = shadeColor(color, emotions[emotion]*30);
             totalR += color[0];
             totalG += color[1];
             totalB += color[2];
@@ -440,6 +487,7 @@ function calculateColor(emotions) {
 }
 
 //Modified from http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+//Changes brightness of color based on emotional intensity
 function shadeColor(color, percent) {
 
     var R = parseInt(color.substring(1,3),16);
@@ -464,6 +512,8 @@ function shadeColor(color, percent) {
  * INFORMATION OUTPUT FUNCTIONS
  *
  */
+
+//Outputs requested info in popup
 function outputInfo(agentName, infoType) {
     var title = agentName + "'s " + infoType;
     var message = "";
@@ -490,9 +540,11 @@ function outputInfo(agentName, infoType) {
     swal(title, message);
 }
 
+
+//Builds string for message on emotional info
 function buildEmotionString(agentName) {
     console.log(agentName + ".getState(); (For popup display)");
-    var emotions = agentsList[agentName]["Engine"].emotionalState.state;
+    var emotions = agentsList[agentName]["Engine"].getEmotions();
     var message = "";
 
     for (var emotionName in emotions) {
@@ -504,6 +556,8 @@ function buildEmotionString(agentName) {
     return message;
 }
 
+
+//Builds string for message on goals info
 function buildGoalsString(agentName) {
     console.log(agentName + ".getGoals(); (For popup display)");
     var goals = agentsList[agentName]["Engine"].goals;
@@ -518,13 +572,15 @@ function buildGoalsString(agentName) {
     return message;
 }
 
+
+//Builds string for message on events info
 function buildEventsString(agentName) {
     console.log(agentName + ".getEvents(); (For popup display)");
     var events = agentsList[agentName]["Engine"].events;
     var message = "";
 
     for (var eventName in events) {
-        if (events.hasOwnProperty(eventName)) {
+        if (events.hasOwnProperty(eventName) && eventName !== "empty") {
             message += eventName.toUpperCase() + "\n\tExpectation: " + events[eventName]["Expectation"].toFixed(2)
                 + "\n\tDesirability: " + events[eventName]["Desirability"].toFixed(2) + "\n\n";
         }
@@ -533,6 +589,8 @@ function buildEventsString(agentName) {
     return message;
 }
 
+
+//Builds string for message on associations info
 function buildAssociationsString(agentName) {
     console.log(agentName + ".getAssociations(); (For popup display)");
     var associations = agentsList[agentName]["Engine"].appraiser.associations;
@@ -552,6 +610,8 @@ function buildAssociationsString(agentName) {
     return message;
 }
 
+
+//Builds string for message on motivations info
 function buildMotivationsString(agentName) {
     console.log(agentName + ".getMotivations(); (For popup display)");
     var motivations = agentsList[agentName]["Engine"].filter.motivations;
@@ -573,28 +633,4 @@ function buildMotivationsString(agentName) {
     }
 
     return message;
-}
-
-function triggerEvent(eventName, objectsString) {
-    if(eventName !== " ") {
-        for (var agentName in agentsList) {
-            var associations = objectsString.replace(/\s+/g, '');
-            associations = associations.split(",");
-            itemsList = pushArray(itemsList, associations);
-            console.log(agentName + ".triggerEvent(\"" + eventName + "\", [" + associations + "]);");
-            agentsList[agentName]["Engine"].triggerEvent(eventName, associations);
-        }
-        updateColors();
-    }
-    else {
-        swal("Please choose an event", "", "error");
-    }
-
-    objectFolder.remove(objectAgent);
-    objectFolder.remove(objectName);
-    objectFolder.remove(objectButton);
-
-    objectAgent = objectFolder.add(objects, "agentName", agentNames).name("Agent Name");
-    objectName = objectFolder.add(objects, "objectName", itemsList).name("Object Name");
-    objectButton = objectFolder.add(objects, "introduceButton").name("Introduce Object");
 }
