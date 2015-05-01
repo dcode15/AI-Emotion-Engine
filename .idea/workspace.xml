@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0235197e-9975-488e-870c-9402b9e8ce78" name="Default" comment="">
-      <change type="DELETED" beforePath="C:\Users\Douglas\Desktop\IS\js\utils\extra.js" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/engine/appraiser.js" afterPath="$PROJECT_DIR$/js/engine/appraiser.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/engine/engine.js" afterPath="$PROJECT_DIR$/js/engine/engine.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/engine/evaluator.js" afterPath="$PROJECT_DIR$/js/engine/evaluator.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/engine/filter.js" afterPath="$PROJECT_DIR$/js/engine/filter.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/fuzzy/fuzzy.js" afterPath="$PROJECT_DIR$/js/fuzzy/fuzzy.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/ui.js" afterPath="$PROJECT_DIR$/js/ui.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/utils/utilities.js" afterPath="$PROJECT_DIR$/js/utils/utilities.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
     </list>
     <ignored path="IS.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,8 +29,8 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.26892656" vertical-offset="0" max-vertical-offset="885">
-              <caret line="14" column="51" selection-start-line="14" selection-start-column="51" selection-end-line="14" selection-end-column="51" />
+            <state vertical-scroll-proportion="0.24971752" vertical-offset="0" max-vertical-offset="885">
+              <caret line="13" column="7" selection-start-line="13" selection-start-column="7" selection-end-line="13" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -82,7 +74,6 @@
         <option value="$PROJECT_DIR$/css/style.css" />
         <option value="$PROJECT_DIR$/js/engine/inhibitor.js" />
         <option value="$PROJECT_DIR$/js/engine/BehaviorSelector.js" />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/js/ui.js" />
         <option value="$PROJECT_DIR$/js/engine/engine.js" />
         <option value="$PROJECT_DIR$/js/engine/appraiser.js" />
@@ -91,6 +82,7 @@
         <option value="$PROJECT_DIR$/js/engine/evaluator.js" />
         <option value="$PROJECT_DIR$/js/fuzzy/fuzzy.js" />
         <option value="$PROJECT_DIR$/js/utils/utilities.js" />
+        <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
   </component>
@@ -766,8 +758,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.26892656" vertical-offset="0" max-vertical-offset="885">
-          <caret line="14" column="51" selection-start-line="14" selection-start-column="51" selection-end-line="14" selection-end-column="51" />
+        <state vertical-scroll-proportion="0.24971752" vertical-offset="0" max-vertical-offset="885">
+          <caret line="13" column="7" selection-start-line="13" selection-start-column="7" selection-end-line="13" selection-end-column="7" />
           <folding />
         </state>
       </provider>
